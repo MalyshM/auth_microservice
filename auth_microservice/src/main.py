@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from typing import Sequence
+from fastapi import Depends, FastAPI
+from sqlmodel import select
 from starlette.middleware.cors import CORSMiddleware
 
 # from admin import UserAdmin, AdminAuth, ETLView
@@ -6,6 +8,9 @@ from starlette.middleware.cors import CORSMiddleware
 
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from auth_microservice.src.models import User, connect_db_data
 
 
 def get_application() -> FastAPI:
@@ -35,3 +40,24 @@ async def custom_swagger_ui_html():
 @app.get("/openapi.json", include_in_schema=False)
 async def get_custom_openapi():
     return get_openapi(title="FastAPI", version="1.0", routes=app.routes)
+
+
+@app.post("/user")
+async def post_user(
+    user: User, session: AsyncSession = Depends(connect_db_data)
+) -> User:
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
+#
+@app.get("/user")
+async def get_users(
+    session: AsyncSession = Depends(connect_db_data),
+) -> Sequence[User]:
+    result = await session.execute(select(User))
+    result = result.scalars().all()
+    print(result)
+    return result
