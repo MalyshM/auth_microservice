@@ -33,12 +33,12 @@ def db_create_users_table():
     sql1 = """
 create extension if not exists "uuid-ossp";
 DROP TABLE IF EXISTS users CASCADE;
-CREATE TABLE users(
-    id uuid not null primary key default uuid_generate_v4(),
-    username VARCHAR(255),
-    password VARCHAR NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(255)
+CREATE TABLE users (
+    id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username VARCHAR(255) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(255) UNIQUE
 );
     """
     cursor.execute(sql1)
