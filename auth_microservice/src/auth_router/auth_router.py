@@ -10,11 +10,11 @@ from sqlalchemy import select
 # from logger import LOGGER
 # from models import connect_db_data
 # = Depends(connect_db_data
-group_comparison_page_router = APIRouter(tags=["Group comparison page"])
+registration_router = APIRouter(tags=["Registration page"])
 
 
-@group_comparison_page_router.get(
-    "/api/attendance_static_stud_for_teams",
+@registration_router.post(
+    "",
     name="Plot:plot",
     status_code=status.HTTP_200_OK,
     description="""""",
