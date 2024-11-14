@@ -17,17 +17,13 @@ async_session_vkr = async_sessionmaker(
 #  -> AsyncGenerator[AsyncSession]
 
 
-async def connect_db_data():
+async def connect_db_data() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_vkr() as session:
         yield session
 
 
-class User(SQLModel, table=True):
-    __tablename__: str = "users"
-
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+class UserBase(SQLModel):
     username: Optional[str]
-    password: str = Field(min_length=9)
     email: Optional[str]
     phone: Optional[str]
 
@@ -43,6 +39,10 @@ class User(SQLModel, table=True):
         raise ValueError(
             "At least one of username, email or phone must be provided"
         )
+
+
+class UserCreate(UserBase):
+    password: str = Field(min_length=9)
 
     @field_validator("password", mode="after")
     @classmethod
@@ -63,3 +63,13 @@ class User(SQLModel, table=True):
                 "Password should have at least one lowercase letter"
             )
         return value
+
+
+class UserPublic(UserBase):
+    id: uuid.UUID
+
+
+class User(UserCreate, table=True):
+    __tablename__: str = "users"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
