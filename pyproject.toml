@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "auth-microservice"
+version = "0.1.0"
+description = ""
+authors = ["m.malysh <m.malysh@mail.ocas.local>"]
+readme = "README.md"
+packages = [{include = "auth_microservice", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.5"
+uvicorn = "^0.32.0"
+sqlalchemy = "^2.0.36"
+psycopg2-binary = "^2.9.10"
+sqlmodel = "^0.0.22"
+asyncpg = "^0.30.0"
+loguru = "^0.7.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
