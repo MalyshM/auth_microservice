@@ -1,96 +1,111 @@
-from src.models import UserBase, UserCreate
+from src.dynamic_models import (
+    UserBaseType,
+    UserCreateType,
+    USERNAME_FIELD,
+    EMAIL_FIELD,
+    PHONE_FIELD,
+    PASSWORD_FIELD,
+)
 import pytest
 
 
 def test_user_base_fields():
-    assert UserBase.model_fields is not None
+    assert UserBaseType.model_fields is not None
 
 
 def test_user_base_with_username():
-    user = UserBase(username="asd")
-    assert user.username == "asd"
-    assert user.get_valid_field == ("username", "asd")
+    user = UserBaseType(**{USERNAME_FIELD: "asd"})
+    assert getattr(user, USERNAME_FIELD) == "asd"
+    assert user.get_valid_field == (USERNAME_FIELD, "asd")
 
 
 def test_user_base_with_email():
-    user = UserBase(email="mama_ya_sozdal_pochty@mail.ru")
-    assert user.email == "mama_ya_sozdal_pochty@mail.ru"
-    assert user.get_valid_field == ("email", "mama_ya_sozdal_pochty@mail.ru")
+    user = UserBaseType(**{EMAIL_FIELD: "mama_ya_sozdal_pochty@mail.ru"})
+    assert getattr(user, EMAIL_FIELD) == "mama_ya_sozdal_pochty@mail.ru"
+    assert user.get_valid_field == (
+        EMAIL_FIELD,
+        "mama_ya_sozdal_pochty@mail.ru",
+    )
+
+
+def test_user_base_with_phone():
+    user = UserBaseType(**{PHONE_FIELD: "+71234567890"})
+    assert getattr(user, PHONE_FIELD) == "+71234567890"
+    assert user.get_valid_field == (PHONE_FIELD, "+71234567890")
+
+
+def test_user_base_with_empty_field():
+    user = UserBaseType(
+        **{USERNAME_FIELD: "asd", EMAIL_FIELD: "", PHONE_FIELD: ""}
+    )
+    assert getattr(user, USERNAME_FIELD) == "asd"
+    assert getattr(user, EMAIL_FIELD) is None
+    assert getattr(user, PHONE_FIELD) is None
+    assert user.get_valid_field == ("username", "asd")
 
 
 def test_user_base_with_invalid_email():
     with pytest.raises(ValueError):
-        UserBase(email="mama_ya_sozdal_pochty@mail")
-
-
-def test_user_base_with_phone():
-    user = UserBase(phone="+71234567890")
-    assert user.phone == "+71234567890"
-    assert user.get_valid_field == ("phone", "+71234567890")
+        UserBaseType(**{EMAIL_FIELD: "mama_ya_sozdal_pochty@mail"})
 
 
 def test_user_base_with_invalid_phone1():
     with pytest.raises(ValueError):
-        UserBase(phone="71234567890")
+        UserBaseType(**{PHONE_FIELD: "71234567890"})
 
 
 def test_user_base_with_phone2():
-    user = UserBase(phone="812345678901")
-    assert user.phone == "81234567890"
-    assert user.get_valid_field == ("phone", "81234567890")
-
-
-def test_user_create_with_username_and_incorrect_password():
-    with pytest.raises(ValueError):
-        UserCreate(username="asd", password="as")
-
-
-def test_user_create_with_username_and_incorrect_password1():
-    with pytest.raises(ValueError):
-        UserCreate(username="asd", password="asdasdasdasd")
-
-
-def test_user_create_with_username_and_incorrect_password2():
-    with pytest.raises(ValueError):
-        UserCreate(username="asd", password="asdasdasd123")
-
-
-def test_user_create_with_username_and_incorrect_password3():
-    with pytest.raises(ValueError):
-        UserCreate(username="asd", password="ASDASDASD123")
+    user = UserBaseType(**{PHONE_FIELD: "812345678901"})
+    assert getattr(user, PHONE_FIELD) == "81234567890"
+    assert user.get_valid_field == (PHONE_FIELD, "81234567890")
 
 
 def test_user_create_with_username_and_password():
-    user_create = UserCreate(username="asd", password="asdASD123!@#")
-    assert user_create.username == "asd"
-    assert user_create.password == "asdASD123!@#"
+    user_create = UserCreateType(
+        **{USERNAME_FIELD: "asd", PASSWORD_FIELD: "asdASD123!@#"}
+    )
+    assert getattr(user_create, USERNAME_FIELD) == "asd"
+    assert getattr(user_create, PASSWORD_FIELD) == "asdASD123!@#"
     assert user_create.get_valid_field == ("username", "asd")
 
 
 def test_user_create_with_email_and_password():
-    user_create = UserCreate(
-        email="mama_ya_sozdal_pochty@mail.ru", password="asdASD123!@#"
+    user_create = UserCreateType(
+        **{
+            EMAIL_FIELD: "mama_ya_sozdal_pochty@mail.ru",
+            PASSWORD_FIELD: "asdASD123!@#",
+        }
     )
-    assert user_create.email == "mama_ya_sozdal_pochty@mail.ru"
-    assert user_create.password == "asdASD123!@#"
+    assert getattr(user_create, EMAIL_FIELD) == "mama_ya_sozdal_pochty@mail.ru"
+    assert getattr(user_create, PASSWORD_FIELD) == "asdASD123!@#"
     assert user_create.get_valid_field == (
-        "email",
+        EMAIL_FIELD,
         "mama_ya_sozdal_pochty@mail.ru",
     )
 
 
 def test_user_create_with_phone_and_password():
-    user_create = UserCreate(phone="+71234567890", password="asdASD123!@#")
-    assert user_create.phone == "+71234567890"
-    assert user_create.password == "asdASD123!@#"
-    assert user_create.get_valid_field == ("phone", "+71234567890")
+    user_create = UserCreateType(
+        **{PHONE_FIELD: "+71234567890", PASSWORD_FIELD: "asdASD123!@#"}
+    )
+    assert getattr(user_create, PHONE_FIELD) == "+71234567890"
+    assert getattr(user_create, PASSWORD_FIELD) == "asdASD123!@#"
+    assert user_create.get_valid_field == (PHONE_FIELD, "+71234567890")
 
 
 def test_user_create_invalid_email():
     with pytest.raises(ValueError):
-        UserCreate(email="invalid_email", password="asdASD123!@#")
+        UserCreateType(
+            **{EMAIL_FIELD: "invalid_email", PASSWORD_FIELD: "asdASD123!@#"}
+        )
 
 
 def test_user_create_no_fields():
     with pytest.raises(ValueError):
-        UserCreate(password="asdASD123!@#")
+        UserCreateType(**{PASSWORD_FIELD: "asdASD123!@#"})
+
+
+def test_user_create_with_incorrect_password():
+    for password in ["as", "asdasdasdasd", "asdasdasd123", "ASDASDASD123"]:
+        with pytest.raises(ValueError):
+            UserCreateType(**{USERNAME_FIELD: "asd", PASSWORD_FIELD: password})
