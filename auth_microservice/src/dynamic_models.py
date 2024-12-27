@@ -8,6 +8,8 @@ from pydantic import create_model, field_validator, model_validator
 from sqlmodel import Field, SQLModel
 from dotenv import load_dotenv
 
+from auth_microservice.src.password_utils import hash_password
+
 
 load_dotenv()
 USERNAME_FIELD = os.getenv("USERNAME_FIELD", "")
@@ -154,6 +156,7 @@ def _validate(cls, value: str) -> str:
 
     if not any(char.islower() for char in value):
         raise ValueError("Password should have at least one lowercase letter")
+    value = hash_password(value)
     return value
 
 
