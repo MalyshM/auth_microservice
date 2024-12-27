@@ -76,10 +76,36 @@ async def post_user(
     return UserPublicType(**db_user.model_dump())
 
 
-#
-@app.get("/user", response_model=Sequence[UserBaseType])
+@app.get(
+    "/user",
+    response_model=Sequence[UserBaseType],
+)
 async def get_users(
     session: AsyncSession = Depends(connect_db_data),
 ) -> Sequence[UserBaseType]:
     result = await session.execute(select(UserType))
     return result.scalars().all()
+
+
+@app.post(
+    "/register",
+    response_model=UserPublicType,
+    response_model_exclude_unset=True,
+    response_model_exclude_none=True,
+)
+async def register_user(
+    user: UserCreateType,
+    session: AsyncSession = Depends(connect_db_data),
+) -> UserPublicType:
+    start = time.monotonic()
+    try:
+        async with session.begin():
+            db_user = UserType(**user.model_dump())
+            session.add(db_user)
+    except IntegrityError as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=400, detail=f"User  could not be registered. {e}"
+        )
+    base_logger.info(f"route post_user /user Time: {time.monotonic() - start}")
+    return UserPublicType(**db_user.model_dump())
