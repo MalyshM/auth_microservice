@@ -1,6 +1,6 @@
 # auth_microservice
-какие методы регистрации:
-почта пароль
-логин пароль
-телефон пароль
-через яндекс и через вк - на FastUI пока нельзя сделать
+
+# start app
+- create .env file and fill with actual keys, see .env.example
+- run command poetry install
+- run command make start

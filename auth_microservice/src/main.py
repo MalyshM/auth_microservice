@@ -10,13 +10,14 @@ from sqlalchemy.exc import IntegrityError
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from sqlalchemy.ext.asyncio import AsyncSession
+from auth_microservice.src.connection import connect_db_data
 from auth_microservice.src.logger import base_logger
-from auth_microservice.src.models import (
-    User,
-    UserBase,
-    UserCreate,
-    UserPublic,
-    connect_db_data,
+
+from auth_microservice.src.dynamic_models import (
+    UserBaseType,
+    UserType,
+    UserPublicType,
+    UserCreateType,
 )
 
 
@@ -56,28 +57,29 @@ async def get_custom_openapi():
     return get_openapi(title="FastAPI", version="1.0", routes=app.routes)
 
 
-@app.post("/user", response_model=UserPublic)
+@app.post("/user", response_model=UserPublicType)
 async def post_user(
-    user: UserCreate, session: AsyncSession = Depends(connect_db_data)
-) -> UserPublic:
+    user: UserCreateType,
+    session: AsyncSession = Depends(connect_db_data),
+) -> UserPublicType:
     start = time.monotonic()
     try:
         async with session.begin():
-            db_user = User(**user.model_dump())
+            db_user = UserType(**user.model_dump())
             session.add(db_user)
-    except IntegrityError:
+    except IntegrityError as e:
         await session.rollback()
         raise HTTPException(
-            status_code=400, detail="User  could not be created."
+            status_code=400, detail=f"User  could not be created. {e}"
         )
     base_logger.info(f"route post_user /user Time: {time.monotonic() - start}")
-    return UserPublic(**db_user.model_dump())
+    return UserPublicType(**db_user.model_dump())
 
 
 #
-@app.get("/user", response_model=Sequence[UserBase])
+@app.get("/user", response_model=Sequence[UserBaseType])
 async def get_users(
     session: AsyncSession = Depends(connect_db_data),
-) -> Sequence[UserBase]:
-    result = await session.execute(select(User))
+) -> Sequence[UserBaseType]:
+    result = await session.execute(select(UserType))
     return result.scalars().all()
