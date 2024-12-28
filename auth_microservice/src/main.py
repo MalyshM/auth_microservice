@@ -1,6 +1,6 @@
 import time
 from typing import Sequence
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from sqlmodel import select
 from starlette.middleware.cors import CORSMiddleware
 
@@ -12,8 +12,9 @@ from fastapi.openapi.utils import get_openapi
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_microservice.src.connection import connect_db_data
 from auth_microservice.src.logger import base_logger
-
+from starlette.middleware.base import _StreamingResponse
 from auth_microservice.src.dynamic_models import (
+    PASSWORD_FIELD,
     UserBaseType,
     UserType,
     UserPublicType,
@@ -38,11 +39,34 @@ app = get_application()
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
-    base_logger.info(f"Request: {request.method} {request.url}")
-    response = await call_next(request)
-    base_logger.info(f"Response: {response.status_code}")
-    return response
+async def log_requests(request: Request, call_next) -> Response:
+    log_string = ""
+    client_ip = f"user_ip: {request.client.host}" if request.client else ""
+    log_string += f"Request: {request.method} {request.url}, {client_ip}\n"
+    body = await request.body()
+    if body:
+        log_string += f"Request Body: \n{body.decode()}\n"
+    query_params = request.query_params
+    if query_params:
+        log_string += f"Query Parameters: {query_params}\n"
+    start = time.monotonic()
+    response: _StreamingResponse = await call_next(request)
+    log_string += f"Response Status Code: {response.status_code}\n"
+    elapsed_time = time.monotonic() - start
+    log_string += f"Request Time: {elapsed_time:.4f} seconds\n"
+    response_body = b"".join(
+        [chunk async for chunk in response.body_iterator]  # type: ignore
+    )
+    if 200 <= response.status_code <= 399:
+        base_logger.info(f"Info about requst:\n{log_string}")
+    else:
+        log_string += f"Response result: {response_body.decode()}\n"
+        base_logger.error(f"Info about request:\n{log_string}")
+    return Response(
+        content=response_body,
+        status_code=response.status_code,
+        headers=response.headers,
+    )
 
 
 @app.get("/docs", include_in_schema=False)
