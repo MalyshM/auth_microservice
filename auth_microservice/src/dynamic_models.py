@@ -8,6 +8,8 @@ from pydantic import create_model, field_validator, model_validator
 from sqlmodel import Field, SQLModel
 from dotenv import load_dotenv
 
+from auth_microservice.src.password_utils import hash_password
+
 
 load_dotenv()
 USERNAME_FIELD = os.getenv("USERNAME_FIELD", "")
@@ -15,7 +17,7 @@ EMAIL_FIELD = os.getenv("EMAIL_FIELD", "")
 PHONE_FIELD = os.getenv("PHONE_FIELD", "")
 PASSWORD_FIELD = os.getenv("PASSWORD_FIELD", "")
 ID_FIELD = os.getenv("ID_FIELD", "")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "")
+TABLE_NAME = os.getenv("TABLE_NAME", "")
 
 
 def validate(cls, dict_values: dict) -> dict:
@@ -26,7 +28,7 @@ def validate(cls, dict_values: dict) -> dict:
     ):
         copy_dict = copy.deepcopy(dict_values)
         for k, v in copy_dict.items():
-            if v is None or k not in cls.schema()["properties"].keys():
+            if not v or k not in cls.model_json_schema()["properties"].keys():
                 del dict_values[k]
         if PASSWORD_FIELD in dict_values:
             if ID_FIELD in dict_values:
@@ -154,6 +156,7 @@ def _validate(cls, value: str) -> str:
 
     if not any(char.islower() for char in value):
         raise ValueError("Password should have at least one lowercase letter")
+    value = hash_password(value)
     return value
 
 
@@ -184,7 +187,7 @@ field_definitions[ID_FIELD] = (
     uuid.UUID,
     Field(default_factory=uuid.uuid4, primary_key=True),
 )
-field_definitions["__tablename__"] = (str, DATABASE_NAME)
+field_definitions["__tablename__"] = (str, TABLE_NAME)
 UserType = create_model(
     "User",
     __base__=UserCreateType,
@@ -192,24 +195,3 @@ UserType = create_model(
     **field_definitions,
     __cls_kwargs__={"table": True},
 )
-
-if __name__ == "__main__":
-    hero = UserBaseType(
-        **{
-            # USERNAME_FIELD: "Spider-Boy",
-            # EMAIL_FIELD: "Pedro Parqueador",
-            EMAIL_FIELD: "Pedro_Parqueador@mail.ru",
-        }
-    )
-    print(hero)
-    print(hero.get_valid_field)
-    hero = UserCreateType(
-        **{
-            # USERNAME_FIELD: "Spider-Boy",
-            # EMAIL_FIELD: "Pedro Parqueador",
-            EMAIL_FIELD: "Pedro_Parqueador@mail.ru",
-            PASSWORD_FIELD: "asdASD123!@#",
-        }
-    )
-    print(hero)
-    print(hero.get_valid_field)
