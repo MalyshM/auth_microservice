@@ -86,7 +86,6 @@ async def post_user(
     user: UserCreateType,
     session: AsyncSession = Depends(connect_db_data),
 ) -> UserPublicType:
-    start = time.monotonic()
     try:
         async with session.begin():
             db_user = UserType(**user.model_dump())
@@ -96,7 +95,6 @@ async def post_user(
         raise HTTPException(
             status_code=400, detail=f"User  could not be created. {e}"
         )
-    base_logger.info(f"route post_user /user Time: {time.monotonic() - start}")
     return UserPublicType(**db_user.model_dump())
 
 
@@ -121,7 +119,6 @@ async def register_user(
     user: UserCreateType,
     session: AsyncSession = Depends(connect_db_data),
 ) -> UserPublicType:
-    start = time.monotonic()
     try:
         async with session.begin():
             db_user = UserType(**user.model_dump())
@@ -131,5 +128,33 @@ async def register_user(
         raise HTTPException(
             status_code=400, detail=f"User  could not be registered. {e}"
         )
-    base_logger.info(f"route post_user /user Time: {time.monotonic() - start}")
     return UserPublicType(**db_user.model_dump())
+
+
+@app.post(
+    "/login",
+    response_model=UserPublicType,
+    response_model_exclude_unset=True,
+    response_model_exclude_none=True,
+)
+async def login_user(
+    user: UserCreateType,
+    session: AsyncSession = Depends(connect_db_data),
+) -> UserPublicType:
+    try:
+        field, text = user.get_valid_field
+        result = await session.execute(
+            select(UserType).where(getattr(UserType, field) == text)
+        )
+        result = result.scalars().one()
+        if getattr(result, PASSWORD_FIELD) != getattr(user, PASSWORD_FIELD):
+            raise HTTPException(
+                status_code=403, detail="User provided incorrect data."
+            )
+    except IntegrityError as e:
+        raise HTTPException(status_code=404, detail=f"User not found. {e}")
+    except HTTPException as e:
+        raise e
+    except BaseException as e:
+        raise HTTPException(status_code=400, detail=f"Error: {e}")
+    return UserPublicType(**result.model_dump())
