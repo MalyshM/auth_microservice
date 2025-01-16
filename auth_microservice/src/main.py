@@ -4,8 +4,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from sqlmodel import select
 from starlette.middleware.cors import CORSMiddleware
 
-# from admin import UserAdmin, AdminAuth, ETLView
-# from models import engine
+
 from sqlalchemy.exc import IntegrityError
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -14,11 +13,16 @@ from auth_microservice.src.connection import connect_db_data
 from auth_microservice.src.logger import base_logger
 from starlette.middleware.base import _StreamingResponse
 from auth_microservice.src.dynamic_models import (
+    ID_FIELD,
     PASSWORD_FIELD,
     UserBaseType,
     UserType,
     UserPublicType,
     UserCreateType,
+)
+from auth_microservice.src.token_utils import (
+    create_access_token,
+    create_refresh_token,
 )
 
 
@@ -31,7 +35,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    # application.include_router(main_page_router)
+
     return application
 
 
@@ -54,9 +58,7 @@ async def log_requests(request: Request, call_next) -> Response:
     log_string += f"Response Status Code: {response.status_code}\n"
     elapsed_time = time.monotonic() - start
     log_string += f"Request Time: {elapsed_time:.4f} seconds\n"
-    response_body = b"".join(
-        [chunk async for chunk in response.body_iterator]  # type: ignore
-    )
+    response_body = b"".join([chunk async for chunk in response.body_iterator])
     if 200 <= response.status_code <= 399:
         base_logger.info(f"Info about requst:\n{log_string}")
     else:
@@ -151,10 +153,28 @@ async def login_user(
             raise HTTPException(
                 status_code=403, detail="User provided incorrect data."
             )
+        rsp_body = UserPublicType(**result.model_dump())
+        access_token = create_access_token(
+            {ID_FIELD: getattr(rsp_body, ID_FIELD)}
+        )
+        refresh_token = create_refresh_token(
+            {ID_FIELD: getattr(rsp_body, ID_FIELD)}
+        )
     except IntegrityError as e:
         raise HTTPException(status_code=404, detail=f"User not found. {e}")
     except HTTPException as e:
         raise e
     except BaseException as e:
         raise HTTPException(status_code=400, detail=f"Error: {e}")
-    return UserPublicType(**result.model_dump())
+
+    response = Response(status_code=200)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+    )
+    response.body = rsp_body.model_dump_json().encode()
+    return response
