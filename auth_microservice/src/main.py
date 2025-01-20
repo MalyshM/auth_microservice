@@ -22,8 +22,6 @@ from auth_microservice.src.dynamic_models import (
     UserCreateType,
 )
 from auth_microservice.src.token_utils import (
-    create_access_token,
-    create_refresh_token,
     set_cookie_tokens,
 )
 
