@@ -1,17 +1,24 @@
+import os
 import psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def db_create_users_table():
     conn = psycopg2.connect(
-        dbname="postgres", user="postgres", password="admin", host="localhost"
+        dbname="postgres",
+        user=os.getenv("DB_USER", ""),
+        password=os.getenv("DB_PASSWORD", ""),
+        host=os.getenv("DB_HOST", ""),
     )
     cursor = conn.cursor()
 
     conn.autocommit = True
-    sql = """DROP DATABASE IF EXISTS auth_users;"""
+    sql = f"""DROP DATABASE IF EXISTS {os.getenv("DB_NAME", "auth_users")};"""
     cursor.execute(sql)
-    sql = """
-    CREATE DATABASE auth_users
+    sql = f"""
+    CREATE DATABASE {os.getenv("DB_NAME", "auth_users")}
     WITH
     OWNER = postgres
     ENCODING = 'UTF8'
@@ -26,19 +33,22 @@ def db_create_users_table():
     cursor.close()
     conn.close()
     conn = psycopg2.connect(
-        dbname="auth_users", user="postgres", password="admin", host="localhost"
+        dbname=os.getenv("DB_NAME", ""),
+        user=os.getenv("DB_USER", ""),
+        password=os.getenv("DB_PASSWORD", ""),
+        host=os.getenv("DB_HOST", ""),
     )
     cursor = conn.cursor()
     conn.autocommit = True
-    sql1 = """
+    sql1 = f"""
 create extension if not exists "uuid-ossp";
-DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS {os.getenv("TABLE_NAME", "users")} CASCADE;
 CREATE TABLE users (
-    id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username VARCHAR(255) UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE,
-    phone VARCHAR(255) UNIQUE
+    {os.getenv("ID_FIELD", "id")} UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    {os.getenv("USERNAME_FIELD", "username")} VARCHAR(255) UNIQUE,
+    {os.getenv("PASSWORD_FIELD", "password")} VARCHAR(255) NOT NULL,
+    {os.getenv("EMAIL_FIELD", "email")} VARCHAR(255) UNIQUE,
+    {os.getenv("PHONE_FIELD", "phone")} VARCHAR(255) UNIQUE
 );
     """
     cursor.execute(sql1)

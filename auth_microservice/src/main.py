@@ -1,6 +1,7 @@
 import time
 from typing import Sequence
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from sqlmodel import select
 from starlette.middleware.cors import CORSMiddleware
 
@@ -21,8 +22,7 @@ from auth_microservice.src.dynamic_models import (
     UserCreateType,
 )
 from auth_microservice.src.token_utils import (
-    create_access_token,
-    create_refresh_token,
+    set_cookie_tokens,
 )
 
 
@@ -59,15 +59,18 @@ async def log_requests(request: Request, call_next) -> Response:
     elapsed_time = time.monotonic() - start
     log_string += f"Request Time: {elapsed_time:.4f} seconds\n"
     response_body = b"".join([chunk async for chunk in response.body_iterator])
+    response.headers["Content-Length"] = str(len(response_body))
     if 200 <= response.status_code <= 399:
-        base_logger.info(f"Info about requst:\n{log_string}")
+        log_string += f"Response result: {response_body.decode()}\n"
+        base_logger.info(f"Info about request:\n{log_string}")
     else:
         log_string += f"Response result: {response_body.decode()}\n"
         base_logger.error(f"Info about request:\n{log_string}")
     return Response(
         content=response_body,
         status_code=response.status_code,
-        headers=response.headers,
+        media_type=response.media_type,
+        headers=dict(response.headers),
     )
 
 
@@ -114,8 +117,6 @@ async def get_users(
 @app.post(
     "/register",
     response_model=UserPublicType,
-    response_model_exclude_unset=True,
-    response_model_exclude_none=True,
 )
 async def register_user(
     user: UserCreateType,
@@ -130,14 +131,12 @@ async def register_user(
         raise HTTPException(
             status_code=400, detail=f"User  could not be registered. {e}"
         )
-    return UserPublicType(**db_user.model_dump())
+    return await login_user(user, session)
 
 
 @app.post(
     "/login",
     response_model=UserPublicType,
-    response_model_exclude_unset=True,
-    response_model_exclude_none=True,
 )
 async def login_user(
     user: UserCreateType,
@@ -154,27 +153,14 @@ async def login_user(
                 status_code=403, detail="User provided incorrect data."
             )
         rsp_body = UserPublicType(**result.model_dump())
-        access_token = create_access_token(
-            {ID_FIELD: getattr(rsp_body, ID_FIELD)}
-        )
-        refresh_token = create_refresh_token(
-            {ID_FIELD: getattr(rsp_body, ID_FIELD)}
-        )
     except IntegrityError as e:
         raise HTTPException(status_code=404, detail=f"User not found. {e}")
     except HTTPException as e:
         raise e
     except BaseException as e:
         raise HTTPException(status_code=400, detail=f"Error: {e}")
-
-    response = Response(status_code=200)
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-    )
-    response.body = rsp_body.model_dump_json().encode()
+    model_dict = rsp_body.model_dump(exclude_none=True)
+    model_dict[ID_FIELD] = str(model_dict[ID_FIELD])
+    response = JSONResponse(content=model_dict, status_code=200)
+    set_cookie_tokens(response, rsp_body)
     return response

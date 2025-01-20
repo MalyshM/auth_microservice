@@ -1,7 +1,9 @@
 import os
+from fastapi import Response
 import jwt
 import datetime
 from dotenv import load_dotenv
+from auth_microservice.src.dynamic_models import UserPublicType
 
 load_dotenv()
 ID_FIELD = os.getenv("ID_FIELD", "")
@@ -66,6 +68,21 @@ def refresh_access_token(refresh_token: str) -> str:
     payload = verify_refresh_token(refresh_token)
     new_access_token = create_access_token(data=payload)
     return new_access_token
+
+
+def set_cookie_tokens(response: Response, rsp_body: UserPublicType):
+    access_token = create_access_token({ID_FIELD: getattr(rsp_body, ID_FIELD)})
+    refresh_token = create_refresh_token(
+        {ID_FIELD: getattr(rsp_body, ID_FIELD)}
+    )
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+    )
 
 
 # Example usage
