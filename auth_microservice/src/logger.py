@@ -1,18 +1,36 @@
 import sys
 from loguru import logger
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+IS_TO_FILE = os.getenv("IS_TO_FILE", "False")
+ROTATION = os.getenv("ROTATION", "1 day")
+RETENTION = os.getenv("RETENTION", "30 days")
+LOG_FORMAT = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}</level> | <cyan>{name}</cyan>:"
+    "<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+)
 
 logger.remove()
-
-
-logger.add(
-    sys.stderr,
-    format=(
-        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-        "<level>{level: <8}</level> | <cyan>{name}</cyan>:"
-        "<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
-    ),
-    level="DEBUG",
-)
+if IS_TO_FILE == "True":
+    logger.add(
+        "./auth_microservice/logs/auth_microservice.log",
+        rotation=ROTATION,
+        retention=RETENTION,
+        format=LOG_FORMAT,
+        level="DEBUG",
+        enqueue=True,
+    )
+else:
+    logger.add(
+        sys.stderr,
+        format=LOG_FORMAT,
+        level="DEBUG",
+        enqueue=True,
+    )
 base_logger = logger
 
 # logger.debug("This is a debug message.")
