@@ -22,7 +22,10 @@ from auth_microservice.src.dynamic_models import (
     UserCreateType,
 )
 from auth_microservice.src.token_utils import (
+    refresh_access_token,
     set_cookie_tokens,
+    verify_access_token,
+    verify_refresh_token,
 )
 
 
@@ -47,6 +50,9 @@ async def log_requests(request: Request, call_next) -> Response:
     log_string = ""
     client_ip = f"user_ip: {request.client.host}" if request.client else ""
     log_string += f"Request: {request.method} {request.url}, {client_ip}\n"
+    cookies = request.cookies
+    if cookies:
+        log_string += f"Request Cookies: {cookies}\n"
     body = await request.body()
     if body:
         log_string += f"Request Body: \n{body.decode()}\n"
@@ -163,4 +169,27 @@ async def login_user(
     model_dict[ID_FIELD] = str(model_dict[ID_FIELD])
     response = JSONResponse(content=model_dict, status_code=200)
     set_cookie_tokens(response, rsp_body)
+    return response
+
+
+@app.get(
+    "/auth",
+)
+async def auth(
+    request: Request,
+) -> Response:
+    cookies = request.cookies
+    is_valid = False
+    payload = verify_access_token(cookies["access_token"])
+    is_valid = True if payload else False
+    if not is_valid:
+        payload = verify_refresh_token(cookies["refresh_token"])
+        is_valid = True if payload else False
+    if not is_valid:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    response = Response()
+    try:
+        refresh_access_token(response, cookies["refresh_token"])
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Error: {e}")
     return response
