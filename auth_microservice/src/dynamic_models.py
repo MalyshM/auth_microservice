@@ -118,30 +118,28 @@ if PHONE_FIELD:
     validators["validate_phone"] = field_validator(PHONE_FIELD)(validate_phone)
 
 
+class UserBase(SQLModel):
+    @property
+    def get_valid_field(self) -> tuple[str, str]:
+        """Return a tuple of a valid field and its value.\n
+        The first valid field in the order of username, email,
+        phone is returned. If no fields are valid, returns
+        empty tuple(only for type hinting).
+        """
+        for key in UserBaseType.model_fields.keys():
+            if key in [USERNAME_FIELD, EMAIL_FIELD, PHONE_FIELD] and getattr(
+                self, key, None
+            ):
+                return key, getattr(self, key)
+        return "", ""
+
+
 UserBaseType = create_model(
     "UserBase",
-    __base__=SQLModel,
+    __base__=UserBase,
     __validators__=validators,
     **field_definitions,
 )
-
-
-@property
-def get_valid_field(self) -> tuple[str, str]:
-    """Return a tuple of a valid field and its value.\n
-    The first valid field in the order of username, email,
-    phone is returned. If no fields are valid, returns
-    empty tuple(only for type hinting).
-    """
-    for key in UserBaseType.model_fields.keys():
-        if key in [USERNAME_FIELD, EMAIL_FIELD, PHONE_FIELD] and getattr(
-            self, key, None
-        ):
-            return key, getattr(self, key)
-    return "", ""
-
-
-UserBaseType.get_valid_field = get_valid_field
 
 
 def _validate(cls, value: str) -> str:
