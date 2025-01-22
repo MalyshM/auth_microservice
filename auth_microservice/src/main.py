@@ -1,5 +1,4 @@
 import time
-from typing import Sequence
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from sqlmodel import select
@@ -16,11 +15,11 @@ from starlette.middleware.base import _StreamingResponse
 from auth_microservice.src.dynamic_models import (
     ID_FIELD,
     PASSWORD_FIELD,
-    UserBaseType,
-    UserType,
+    UserDBType,
     UserPublicType,
     UserCreateType,
 )
+from auth_microservice.src.routers.user_router import user_router
 from auth_microservice.src.token_utils import (
     refresh_access_token,
     set_cookie_tokens,
@@ -38,7 +37,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
+    application.include_router(user_router)
     return application
 
 
@@ -66,12 +65,16 @@ async def log_requests(request: Request, call_next) -> Response:
     log_string += f"Request Time: {elapsed_time:.4f} seconds\n"
     response_body = b"".join([chunk async for chunk in response.body_iterator])
     response.headers["Content-Length"] = str(len(response_body))
-    if 200 <= response.status_code <= 399:
-        log_string += f"Response result: {response_body.decode()}\n"
-        base_logger.info(f"Info about request:\n{log_string}")
-    else:
-        log_string += f"Response result: {response_body.decode()}\n"
-        base_logger.error(f"Info about request:\n{log_string}")
+    if (
+        "docs" not in request.url.path
+        and "openapi.json" not in request.url.path
+    ):
+        if 200 <= response.status_code <= 399:
+            log_string += f"Response result: {response_body.decode()}\n"
+            base_logger.info(f"Info about request:\n{log_string}")
+        else:
+            log_string += f"Response result: {response_body.decode()}\n"
+            base_logger.error(f"Info about request:\n{log_string}")
     return Response(
         content=response_body,
         status_code=response.status_code,
@@ -90,34 +93,6 @@ async def custom_swagger_ui_html():
 @app.get("/openapi.json", include_in_schema=False)
 async def get_custom_openapi():
     return get_openapi(title="FastAPI", version="1.0", routes=app.routes)
-
-
-@app.post("/user", response_model=UserPublicType)
-async def post_user(
-    user: UserCreateType,
-    session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicType:
-    try:
-        async with session.begin():
-            db_user = UserType(**user.model_dump())
-            session.add(db_user)
-    except IntegrityError as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=400, detail=f"User  could not be created. {e}"
-        )
-    return UserPublicType(**db_user.model_dump())
-
-
-@app.get(
-    "/user",
-    response_model=Sequence[UserBaseType],
-)
-async def get_users(
-    session: AsyncSession = Depends(connect_db_data),
-) -> Sequence[UserBaseType]:
-    result = await session.execute(select(UserType))
-    return result.scalars().all()
 
 
 @app.post(
