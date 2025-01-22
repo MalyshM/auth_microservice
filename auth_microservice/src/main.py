@@ -130,7 +130,7 @@ async def register_user(
 ) -> UserPublicType:
     try:
         async with session.begin():
-            db_user = UserType(**user.model_dump())
+            db_user = UserDBType(**user.model_dump())
             session.add(db_user)
     except IntegrityError as e:
         await session.rollback()
@@ -151,7 +151,7 @@ async def login_user(
     try:
         field, text = user.get_valid_field
         result = await session.execute(
-            select(UserType).where(getattr(UserType, field) == text)
+            select(UserDBType).where(getattr(UserDBType, field) == text)
         )
         result = result.scalars().one()
         if getattr(result, PASSWORD_FIELD) != getattr(user, PASSWORD_FIELD):

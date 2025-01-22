@@ -169,11 +169,44 @@ UserCreateType = create_model(
     **field_definitions,
 )
 
+
+def validate_from_db(cls, dict_values: dict) -> dict:
+    if any(
+        True
+        for key, item in dict_values.items()
+        if key in [USERNAME_FIELD, EMAIL_FIELD, PHONE_FIELD] and item
+    ):
+        copy_dict = copy.deepcopy(dict_values)
+        for k, v in copy_dict.items():
+            if not v or k not in cls.model_json_schema()["properties"].keys():
+                del dict_values[k]
+        return dict_values
+    raise ValueError(
+        "At least one of username, email or phone must be provided"
+    )
+
+
 field_definitions = {}
 validators = {}
 field_definitions[ID_FIELD] = (uuid.UUID, ...)
 UserPublicType = create_model(
     "UserPublic",
+    __base__=UserBaseType,
+    __validators__=validators,
+    **field_definitions,
+)
+
+
+validators["validate"] = model_validator(mode="before")(validate_from_db)
+UserPublicDBType = create_model(
+    "UserPublicDB",
+    __base__=UserBaseType,
+    __validators__=validators,
+    **field_definitions,
+)
+field_definitions = {}
+UserBaseDBType = create_model(
+    "UserBaseDB",
     __base__=UserBaseType,
     __validators__=validators,
     **field_definitions,
@@ -186,7 +219,16 @@ field_definitions[ID_FIELD] = (
     Field(default_factory=uuid.uuid4, primary_key=True),
 )
 field_definitions["__tablename__"] = (str, TABLE_NAME)
-UserType = create_model(
+# UserType = create_model(
+#     "User",
+#     __base__=UserCreateType,
+#     __validators__=validators,
+#     **field_definitions,
+#     __cls_kwargs__={"table": True},
+# )
+validators["validate"] = model_validator(mode="before")(validate_from_db)
+
+UserDBType = create_model(
     "User",
     __base__=UserCreateType,
     __validators__=validators,
