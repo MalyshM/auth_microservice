@@ -1,31 +1,14 @@
 import time
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
-from sqlmodel import select
+from fastapi import FastAPI, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 
 
-from sqlalchemy.exc import IntegrityError
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from sqlalchemy.ext.asyncio import AsyncSession
-from auth_microservice.src.connection import connect_db_data
 from auth_microservice.src.logger import base_logger
 from starlette.middleware.base import _StreamingResponse
-from auth_microservice.src.dynamic_models import (
-    ID_FIELD,
-    PASSWORD_FIELD,
-    UserDBType,
-    UserPublicType,
-    UserCreateType,
-)
+from auth_microservice.src.routers.auth_router import auth_router
 from auth_microservice.src.routers.user_router import user_router
-from auth_microservice.src.token_utils import (
-    refresh_access_token,
-    set_cookie_tokens,
-    verify_access_token,
-    verify_refresh_token,
-)
 
 
 def get_application() -> FastAPI:
@@ -37,6 +20,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    application.include_router(auth_router)
     application.include_router(user_router)
     return application
 
@@ -93,78 +77,3 @@ async def custom_swagger_ui_html():
 @app.get("/openapi.json", include_in_schema=False)
 async def get_custom_openapi():
     return get_openapi(title="FastAPI", version="1.0", routes=app.routes)
-
-
-@app.post(
-    "/register",
-    response_model=UserPublicType,
-)
-async def register_user(
-    user: UserCreateType,
-    session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicType:
-    try:
-        async with session.begin():
-            db_user = UserDBType(**user.model_dump())
-            session.add(db_user)
-    except IntegrityError as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=400, detail=f"User  could not be registered. {e}"
-        )
-    return await login_user(user, session)
-
-
-@app.post(
-    "/login",
-    response_model=UserPublicType,
-)
-async def login_user(
-    user: UserCreateType,
-    session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicType:
-    try:
-        field, text = user.get_valid_field
-        result = await session.execute(
-            select(UserDBType).where(getattr(UserDBType, field) == text)
-        )
-        result = result.scalars().one()
-        if getattr(result, PASSWORD_FIELD) != getattr(user, PASSWORD_FIELD):
-            raise HTTPException(
-                status_code=403, detail="User provided incorrect data."
-            )
-        rsp_body = UserPublicType(**result.model_dump())
-    except IntegrityError as e:
-        raise HTTPException(status_code=404, detail=f"User not found. {e}")
-    except HTTPException as e:
-        raise e
-    except BaseException as e:
-        raise HTTPException(status_code=400, detail=f"Error: {e}")
-    model_dict = rsp_body.model_dump(exclude_none=True)
-    model_dict[ID_FIELD] = str(model_dict[ID_FIELD])
-    response = JSONResponse(content=model_dict, status_code=200)
-    set_cookie_tokens(response, rsp_body)
-    return response
-
-
-@app.get(
-    "/auth",
-)
-async def auth(
-    request: Request,
-) -> Response:
-    cookies = request.cookies
-    is_valid = False
-    payload = verify_access_token(cookies["access_token"])
-    is_valid = True if payload else False
-    if not is_valid:
-        payload = verify_refresh_token(cookies["refresh_token"])
-        is_valid = True if payload else False
-    if not is_valid:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    response = Response()
-    try:
-        refresh_access_token(response, cookies["refresh_token"])
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Error: {e}")
-    return response
