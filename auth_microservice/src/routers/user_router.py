@@ -69,6 +69,8 @@ async def get_my_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    if not request.cookies.get("refresh_token"):
+        raise HTTPException(status_code=401, detail="Not authenticated")
     payload = verify_refresh_token(request.cookies["refresh_token"])
     if not payload:
         raise HTTPException(status_code=401, detail="Not authenticated")
