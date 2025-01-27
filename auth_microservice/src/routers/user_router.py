@@ -32,6 +32,7 @@ user_router = APIRouter(
 )
 
 
+# FIXME TypeError: Object of type UserPublicDB is not JSON serializable
 @user_router.post(
     "", response_model=UserPublicDBType, response_model_exclude_none=True
 )
@@ -108,6 +109,7 @@ async def get_users_by_field(
     return make_resp(res, request, set_cookie)
 
 
+# FIXME TypeError: Object of type UserPublicDB is not JSON serializable
 @user_router.put(
     "/{user_id}",
     response_model=UserPublicDBType,
