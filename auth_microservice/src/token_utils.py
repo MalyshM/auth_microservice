@@ -4,7 +4,7 @@ from fastapi import Response
 import jwt
 import datetime
 from dotenv import load_dotenv
-from auth_microservice.src.dynamic_models import UserPublicType
+from auth_microservice.src.models.dynamic_models import UserPublicType
 from auth_microservice.src.logger import base_logger
 
 load_dotenv()

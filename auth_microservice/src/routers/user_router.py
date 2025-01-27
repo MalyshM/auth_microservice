@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_microservice.src.connection import connect_db_data
 from auth_microservice.src.dependencies.auth_dependency import auth_dependency
-from auth_microservice.src.dynamic_models import (
+from auth_microservice.src.models.dynamic_models import (
     ID_FIELD,
     UserBaseType,
     UserPublicDBType,

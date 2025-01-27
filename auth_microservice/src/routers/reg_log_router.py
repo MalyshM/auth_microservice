@@ -5,13 +5,13 @@ from auth_microservice.src.connection import connect_db_data
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
 
-from auth_microservice.src.dynamic_models import (
+from auth_microservice.src.models.dynamic_models import (
     ID_FIELD,
     PASSWORD_FIELD,
     UserPublicDBType,
     UserCreateType,
-    UserDBType,
 )
+from auth_microservice.src.models.dynamic_db_models import UserDBType
 from auth_microservice.src.routers.user_router import get_my_user
 from auth_microservice.src.token_utils import (
     set_refresh_token_cookie,

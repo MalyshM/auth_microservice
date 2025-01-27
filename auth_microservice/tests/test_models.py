@@ -1,4 +1,5 @@
-from src.dynamic_models import (
+from src.password_utils import hash_password
+from src.models.dynamic_models import (
     UserBaseType,
     UserCreateType,
     USERNAME_FIELD,
@@ -65,7 +66,7 @@ def test_user_create_with_username_and_password():
         **{USERNAME_FIELD: "asd", PASSWORD_FIELD: "asdASD123!@#"}
     )
     assert getattr(user_create, USERNAME_FIELD) == "asd"
-    assert getattr(user_create, PASSWORD_FIELD) == "asdASD123!@#"
+    assert getattr(user_create, PASSWORD_FIELD) == hash_password("asdASD123!@#")
     assert user_create.get_valid_field == ("username", "asd")
 
 
@@ -77,7 +78,7 @@ def test_user_create_with_email_and_password():
         }
     )
     assert getattr(user_create, EMAIL_FIELD) == "mama_ya_sozdal_pochty@mail.ru"
-    assert getattr(user_create, PASSWORD_FIELD) == "asdASD123!@#"
+    assert getattr(user_create, PASSWORD_FIELD) == hash_password("asdASD123!@#")
     assert user_create.get_valid_field == (
         EMAIL_FIELD,
         "mama_ya_sozdal_pochty@mail.ru",
@@ -89,7 +90,7 @@ def test_user_create_with_phone_and_password():
         **{PHONE_FIELD: "+71234567890", PASSWORD_FIELD: "asdASD123!@#"}
     )
     assert getattr(user_create, PHONE_FIELD) == "+71234567890"
-    assert getattr(user_create, PASSWORD_FIELD) == "asdASD123!@#"
+    assert getattr(user_create, PASSWORD_FIELD) == hash_password("asdASD123!@#")
     assert user_create.get_valid_field == (PHONE_FIELD, "+71234567890")
 
 

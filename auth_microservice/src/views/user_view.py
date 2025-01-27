@@ -1,15 +1,16 @@
 from typing import Sequence
 from sqlmodel import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from auth_microservice.src.dynamic_models import (
+from auth_microservice.src.models.dynamic_models import (
     ID_FIELD,
     UserBase,
     UserBaseType,
-    UserDBType,
     UserPublicType,
     UserPublicDBType,
     UserCreateType,
 )
+from auth_microservice.src.models.dynamic_db_models import UserDBType
+
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
