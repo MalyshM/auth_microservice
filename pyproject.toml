@@ -17,4 +17,5 @@ dependencies = [
     "coverage==7.*",
     "python-dotenv==1.*",
     "pyjwt==2.*",
+    "httpx>=0.28.1",
 ]
