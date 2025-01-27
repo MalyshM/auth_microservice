@@ -3,28 +3,19 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_microservice.src.connection import connect_db_data
+from auth_microservice.src.dependencies.auth_dependency import auth_dependency
 from auth_microservice.src.dynamic_models import (
     ID_FIELD,
     UserBaseType,
     UserPublicDBType,
     UserCreateType,
 )
-from auth_microservice.src.routers.auth_router import auth
+
 from auth_microservice.src.token_utils import (
     refresh_access_token,
     verify_refresh_token,
 )
 from auth_microservice.src.views.user_view import UserView
-from auth_microservice.src.logger import base_logger
-
-
-async def auth_dependency(request: Request) -> Optional[str]:
-    base_logger.info("Auth dependency")
-    try:
-        json_resp = await auth(request)
-        return json_resp.headers.get("Set-Cookie")
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Error: {e}")
 
 
 def make_resp(
@@ -78,6 +69,8 @@ async def get_my_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    if not request.cookies.get("refresh_token"):
+        raise HTTPException(status_code=401, detail="Not authenticated")
     payload = verify_refresh_token(request.cookies["refresh_token"])
     if not payload:
         raise HTTPException(status_code=401, detail="Not authenticated")
