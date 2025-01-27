@@ -38,7 +38,7 @@ user_router = APIRouter(
 )
 async def post_user(
     request: Request,
-    user: UserCreateType,
+    user: UserCreateType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
@@ -101,7 +101,7 @@ async def get_user(
 )
 async def get_users_by_field(
     request: Request,
-    user: UserBaseType,
+    user: UserBaseType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
@@ -117,7 +117,7 @@ async def get_users_by_field(
 )
 async def update_user(
     request: Request,
-    user: UserPublicDBType,
+    user: UserPublicDBType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:

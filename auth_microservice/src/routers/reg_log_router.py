@@ -26,9 +26,9 @@ reg_log_router = APIRouter(tags=["Registration/Login"])
 )
 async def register_user(
     request: Request,
-    user: UserCreateType,
+    user: UserCreateType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicDBType:
+) -> UserPublicDBType:  # type: ignore this is class, not var
     try:
         return await get_my_user(request, session)
     except HTTPException:
@@ -55,9 +55,9 @@ async def register_user(
 )
 async def login_user(
     request: Request,
-    user: UserCreateType,
+    user: UserCreateType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicDBType:
+) -> UserPublicDBType:  # type: ignore this is class, not var
     try:
         return await get_my_user(request, session)
     except HTTPException:

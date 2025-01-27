@@ -31,8 +31,10 @@ class UserView:
 
     @classmethod
     async def create_user(
-        cls, user: UserCreateType, session: AsyncSession
-    ) -> UserPublicType:
+        cls,
+        user: UserCreateType,  # type: ignore this is class, not var
+        session: AsyncSession,
+    ) -> UserPublicType:  # type: ignore this is class, not var
         try:
             async with session.begin():
                 db_user = UserDBType(**user.model_dump())
@@ -46,8 +48,10 @@ class UserView:
 
     @classmethod
     async def update_user(
-        cls, user: UserPublicDBType, session: AsyncSession
-    ) -> UserPublicType:
+        cls,
+        user: UserPublicDBType,  # type: ignore this is class, not var
+        session: AsyncSession,
+    ) -> UserPublicType:  # type: ignore this is class, not var
         try:
             async with session.begin():
                 await session.execute(
@@ -90,7 +94,9 @@ class UserView:
 
     @classmethod
     async def get_users_by_field(
-        cls, user: UserBaseType, session: AsyncSession
+        cls,
+        user: UserBaseType,  # type: ignore this is class, not var
+        session: AsyncSession,
     ) -> Sequence:
         field, text = user.get_valid_field
         result = await session.execute(
