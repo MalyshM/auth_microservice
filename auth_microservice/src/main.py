@@ -9,6 +9,7 @@ from auth_microservice.src.logger import base_logger
 from starlette.middleware.base import _StreamingResponse
 from auth_microservice.src.routers.auth_router import auth_router
 from auth_microservice.src.routers.user_router import user_router
+from auth_microservice.src.routers.ui_router import ui_router
 
 
 def get_application() -> FastAPI:
@@ -20,6 +21,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    application.include_router(ui_router)
     application.include_router(auth_router)
     application.include_router(user_router)
     return application
@@ -49,9 +51,8 @@ async def log_requests(request: Request, call_next) -> Response:
     log_string += f"Request Time: {elapsed_time:.4f} seconds\n"
     response_body = b"".join([chunk async for chunk in response.body_iterator])
     response.headers["Content-Length"] = str(len(response_body))
-    if (
-        "docs" not in request.url.path
-        and "openapi.json" not in request.url.path
+    if not any(
+        route in request.url.path for route in ["docs", "openapi.json", "ui/"]
     ):
         if 200 <= response.status_code <= 399:
             log_string += f"Response result: {response_body.decode()}\n"
