@@ -1,4 +1,5 @@
 from typing import Optional, Sequence
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -76,7 +77,7 @@ async def get_my_user(
     payload = verify_refresh_token(request.cookies["refresh_token"])
     if not payload:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    res = await UserView.get_user(str(payload[ID_FIELD]), session)
+    res = await UserView.get_user(UUID(payload[ID_FIELD]), session)
     return make_resp(res, request, set_cookie)
 
 
@@ -91,7 +92,7 @@ async def get_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.get_user(user_id, session)
+    res = await UserView.get_user(UUID(user_id), session)
     return make_resp(res, request, set_cookie)
 
 

@@ -1,4 +1,5 @@
 from typing import Sequence
+from uuid import UUID
 from sqlmodel import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_microservice.src.models.dynamic_models import (
@@ -68,7 +69,7 @@ class UserView:
         return await UserView.form_rsp_list([user])
 
     @classmethod
-    async def get_user(cls, user_id: str, session: AsyncSession) -> Sequence:
+    async def get_user(cls, user_id: UUID, session: AsyncSession) -> Sequence:
         result = await session.execute(
             select(UserDBType).where(getattr(UserDBType, ID_FIELD) == user_id)
         )
