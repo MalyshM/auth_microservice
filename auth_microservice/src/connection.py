@@ -14,11 +14,11 @@ DATABASE_URL = (
 )
 
 engine = create_async_engine(DATABASE_URL, echo=False)
-async_session_vkr = async_sessionmaker(
+async_session = async_sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )
 
 
 async def connect_db_data() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_vkr() as session:
+    async with async_session() as session:
         yield session
