@@ -44,7 +44,8 @@ class UserView:
             raise HTTPException(
                 status_code=400, detail=f"User  could not be created. {e}"
             )
-        return UserPublicDBType(**db_user.model_dump(exclude_none=True))
+
+        return await UserView.form_rsp_list([db_user])
 
     @classmethod
     async def update_user(
@@ -64,7 +65,7 @@ class UserView:
             raise HTTPException(
                 status_code=400, detail=f"User  could not be created. {e}"
             )
-        return UserPublicDBType(**user.model_dump(exclude_none=True))
+        return await UserView.form_rsp_list([user])
 
     @classmethod
     async def get_user(cls, user_id: str, session: AsyncSession) -> Sequence:
