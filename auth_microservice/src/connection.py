@@ -21,4 +21,7 @@ async_session = async_sessionmaker(
 
 async def connect_db_data() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
