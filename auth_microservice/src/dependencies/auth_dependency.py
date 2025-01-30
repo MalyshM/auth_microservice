@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import HTTPException, Request
-from auth_microservice.src.logger import base_logger
-from auth_microservice.src.routers.auth_router import auth
+from ..logger import base_logger
+from ..routers.auth_router import auth
 
 
 async def auth_dependency(request: Request) -> Optional[str]:

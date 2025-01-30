@@ -1,7 +1,7 @@
 import uuid
 
 from pydantic import create_model, model_validator
-from auth_microservice.src.models.dynamic_models import (
+from .dynamic_models import (
     ID_FIELD,
     TABLE_NAME,
     validate_from_db,

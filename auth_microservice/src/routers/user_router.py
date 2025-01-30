@@ -3,20 +3,20 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from auth_microservice.src.connection import connect_db_data
-from auth_microservice.src.dependencies.auth_dependency import auth_dependency
-from auth_microservice.src.models.dynamic_models import (
+from ..connection import connect_db_data
+from ..dependencies.auth_dependency import auth_dependency
+from ..models.dynamic_models import (
     ID_FIELD,
     UserBaseType,
     UserPublicDBType,
     UserCreateType,
 )
 
-from auth_microservice.src.token_utils import (
+from ..token_utils import (
     refresh_access_token,
     verify_refresh_token,
 )
-from auth_microservice.src.views.user_view import UserView
+from ..views.user_view import UserView
 
 
 def make_resp(

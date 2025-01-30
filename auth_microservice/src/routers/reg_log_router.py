@@ -2,19 +2,19 @@ from typing import Sequence
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from auth_microservice.src.connection import connect_db_data
+from ..connection import connect_db_data
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from auth_microservice.src.models.dynamic_models import (
+from ..models.dynamic_models import (
     ID_FIELD,
     PASSWORD_FIELD,
     UserPublicDBType,
     UserCreateType,
 )
-from auth_microservice.src.models.dynamic_db_models import UserDBType
-from auth_microservice.src.routers.user_router import get_my_user
-from auth_microservice.src.token_utils import (
+from ..models.dynamic_db_models import UserDBType
+from ..routers.user_router import get_my_user
+from ..token_utils import (
     set_refresh_token_cookie,
 )
 

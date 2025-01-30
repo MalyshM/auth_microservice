@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
-from auth_microservice.src.models.dynamic_models import ID_FIELD
-from auth_microservice.src.token_utils import (
+from ..models.dynamic_models import ID_FIELD
+from ..token_utils import (
     refresh_access_token,
     verify_access_token,
     verify_refresh_token,

@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import (
 )
 from typing import AsyncGenerator
 
-from auth_microservice.src.models.dynamic_db_models import UserDBType
-from auth_microservice.src.connection import connect_db_data
-from auth_microservice.src.main import app
+from src.models.dynamic_db_models import UserDBType
+from src.connection import connect_db_data
+from src.main import app
 
 
 @pytest_asyncio.fixture

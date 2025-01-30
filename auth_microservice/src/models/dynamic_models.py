@@ -8,7 +8,7 @@ from pydantic import create_model, field_validator, model_validator
 from sqlmodel import Field, SQLModel
 from dotenv import load_dotenv
 
-from auth_microservice.src.password_utils import hash_password
+from ..password_utils import hash_password
 
 
 load_dotenv()
