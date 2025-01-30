@@ -1,9 +1,10 @@
+from typing import Sequence
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_microservice.src.connection import connect_db_data
 from sqlmodel import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from auth_microservice.src.models.dynamic_models import (
     ID_FIELD,
@@ -22,13 +23,13 @@ reg_log_router = APIRouter(tags=["Registration/Login"])
 
 @reg_log_router.post(
     "/register",
-    response_model=UserPublicDBType,
+    response_model=Sequence[UserPublicDBType],
 )
 async def register_user(
     request: Request,
     user: UserCreateType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicDBType:  # type: ignore this is class, not var
+) -> JSONResponse:  # type: ignore this is class, not var
     try:
         return await get_my_user(request, session)
     except HTTPException:
@@ -38,7 +39,7 @@ async def register_user(
             db_user = UserDBType(**user.model_dump())
             session.add(db_user)
     except IntegrityError as e:
-        await session.rollback()
+        # this block executes in tests, but coverage does not count them
         try:
             return await login_user(request, user, session)
         except BaseException:
@@ -51,13 +52,13 @@ async def register_user(
 
 @reg_log_router.post(
     "/login",
-    response_model=UserPublicDBType,
+    response_model=Sequence[UserPublicDBType],
 )
 async def login_user(
     request: Request,
     user: UserCreateType,  # type: ignore this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-) -> UserPublicDBType:  # type: ignore this is class, not var
+) -> JSONResponse:  # type: ignore this is class, not var
     try:
         return await get_my_user(request, session)
     except HTTPException:
@@ -75,12 +76,14 @@ async def login_user(
         rsp_body = UserPublicDBType(**result.model_dump())
     except IntegrityError as e:
         raise HTTPException(status_code=404, detail=f"User not found. {e}")
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"User not found. {e}")
     except HTTPException as e:
         raise e
     except BaseException as e:
         raise HTTPException(status_code=400, detail=f"Error: {e}")
     model_dict = rsp_body.model_dump(exclude_none=True)
     model_dict[ID_FIELD] = str(model_dict[ID_FIELD])
-    response = JSONResponse(content=model_dict, status_code=200)
+    response = JSONResponse(content=[model_dict], status_code=200)
     set_refresh_token_cookie(response, rsp_body)
     return response
