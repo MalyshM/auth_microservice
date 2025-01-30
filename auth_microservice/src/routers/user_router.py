@@ -135,5 +135,5 @@ async def delete_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.delete_user(user_id, session)
+    res = await UserView.delete_user(UUID(user_id), session)
     return make_resp(res, request, set_cookie)

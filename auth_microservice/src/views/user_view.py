@@ -11,8 +11,7 @@ from ..models.dynamic_models import (
     UserCreateType,
 )
 from ..models.dynamic_db_models import UserDBType
-
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from fastapi import HTTPException
 
 
@@ -43,7 +42,7 @@ class UserView:
         except IntegrityError as e:
             await session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"User  could not be created. {e}"
+                status_code=400, detail=f"User could not be created. {e}"
             )
 
         return await UserView.form_rsp_list([db_user])
@@ -64,21 +63,26 @@ class UserView:
         except IntegrityError as e:
             await session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"User  could not be created. {e}"
+                status_code=400, detail=f"User could not be updated. {e}"
             )
         return await UserView.form_rsp_list([user])
 
     @classmethod
     async def get_user(cls, user_id: UUID, session: AsyncSession) -> Sequence:
-        result = await session.execute(
-            select(UserDBType).where(getattr(UserDBType, ID_FIELD) == user_id)
-        )
-        result = result.scalars().one()
+        try:
+            result = await session.execute(
+                select(UserDBType).where(
+                    getattr(UserDBType, ID_FIELD) == user_id
+                )
+            )
+            result = result.scalars().one()
+        except NoResultFound as e:
+            raise HTTPException(status_code=404, detail=f"User not found. {e}")
         return await UserView.form_rsp_list([result])
 
     @classmethod
     async def delete_user(
-        cls, user_id: str, session: AsyncSession
+        cls, user_id: UUID, session: AsyncSession
     ) -> list[dict]:
         try:
             async with session.begin():
@@ -91,7 +95,7 @@ class UserView:
         except IntegrityError as e:
             await session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"User  could not be deleted. {e}"
+                status_code=400, detail=f"User could not be deleted. {e}"
             )
 
     @classmethod

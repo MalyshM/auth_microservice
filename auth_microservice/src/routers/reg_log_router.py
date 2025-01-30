@@ -45,7 +45,7 @@ async def register_user(
         except BaseException:
             pass
         raise HTTPException(
-            status_code=400, detail=f"User  could not be registered. {e}"
+            status_code=400, detail=f"User could not be registered. {e}"
         )
     return await login_user(request, user, session)
 
