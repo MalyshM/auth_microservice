@@ -97,14 +97,14 @@ field_definitions = {}
 if USERNAME_FIELD:
     field_definitions[USERNAME_FIELD] = (
         Optional[str],
-        Field(min_length=1, default=None),
+        Field(min_length=1, default=None, unique=True),
     )
 
 
 if EMAIL_FIELD:
     field_definitions[EMAIL_FIELD] = (
         Optional[str],
-        Field(min_length=1, default=None),
+        Field(min_length=1, default=None, unique=True),
     )
     validators["validate_email_"] = field_validator(EMAIL_FIELD)(
         validate_email_
@@ -113,7 +113,7 @@ if EMAIL_FIELD:
 if PHONE_FIELD:
     field_definitions[PHONE_FIELD] = (
         Optional[str],
-        Field(min_length=11, max_length=12, default=None),
+        Field(min_length=11, max_length=12, default=None, unique=True),
     )
     validators["validate_phone"] = field_validator(PHONE_FIELD)(validate_phone)
 
