@@ -97,6 +97,8 @@ async def test_login_incorrect_password_with_refresh_token(
     incorrect_credentials = {**TEST_USER, "password": "asdASD123!@#wrong"}
     response = client.post("/login", json=incorrect_credentials)
     assert response.status_code == 200
+    assert client.cookies.get("access_token")
+    assert client.cookies.get("refresh_token")
     rsp = response.json()
     assert isinstance(rsp, list)
     assert isinstance(rsp[0], dict)
