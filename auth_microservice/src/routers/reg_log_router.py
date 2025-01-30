@@ -39,7 +39,6 @@ async def register_user(
             db_user = UserDBType(**user.model_dump())
             session.add(db_user)
     except IntegrityError as e:
-        # this block executes in tests, but coverage does not count them
         try:
             return await login_user(request, user, session)
         except BaseException:
