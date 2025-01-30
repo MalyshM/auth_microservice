@@ -4,8 +4,8 @@ from fastapi import Response
 import jwt
 import datetime
 from dotenv import load_dotenv
-from auth_microservice.src.dynamic_models import UserPublicType
-from auth_microservice.src.logger import base_logger
+from .models.dynamic_models import UserPublicType
+from .logger import base_logger
 
 load_dotenv()
 ID_FIELD = os.getenv("ID_FIELD", "")
@@ -71,12 +71,18 @@ def refresh_access_token(response: Response, refresh_token: str) -> None:
     )
 
 
-def set_cookie_tokens(response: Response, rsp_body: UserPublicType):
+def set_cookie_tokens(
+    response: Response,
+    rsp_body: UserPublicType,  # type: ignore this is class, not var
+):
     set_access_token_cookie(response, rsp_body)
     set_refresh_token_cookie(response, rsp_body)
 
 
-def set_access_token_cookie(response: Response, rsp_body: UserPublicType):
+def set_access_token_cookie(
+    response: Response,
+    rsp_body: UserPublicType,  # type: ignore this is class, not var
+):
     access_token = create_access_token({ID_FIELD: getattr(rsp_body, ID_FIELD)})
     response.set_cookie(
         key="access_token",
@@ -84,7 +90,10 @@ def set_access_token_cookie(response: Response, rsp_body: UserPublicType):
     )
 
 
-def set_refresh_token_cookie(response: Response, rsp_body: UserPublicType):
+def set_refresh_token_cookie(
+    response: Response,
+    rsp_body: UserPublicType,  # type: ignore this is class, not var
+):
     refresh_token = create_refresh_token(
         {ID_FIELD: getattr(rsp_body, ID_FIELD)}
     )
@@ -92,41 +101,3 @@ def set_refresh_token_cookie(response: Response, rsp_body: UserPublicType):
         key="refresh_token",
         value=refresh_token,
     )
-
-
-# Example usage
-if __name__ == "__main__":
-    # User data to encode in the tokens
-    user_data = {"user_id": 123, "username": "example_user"}
-
-    # Create tokens
-    access_token = create_access_token(user_data)
-    refresh_token = create_refresh_token(user_data)
-
-    print(f"Generated Access Token: {access_token}")
-    print(f"Generated Refresh Token: {refresh_token}")
-
-    # Verify tokens
-    try:
-        decoded_access_payload = verify_access_token(access_token)
-        print(f"Decoded Access Payload: {decoded_access_payload}")
-    except Exception as e:
-        print(f"Error verifying access token: {e}")
-
-    try:
-        decoded_refresh_payload = verify_refresh_token(refresh_token)
-        print(f"Decoded Refresh Payload: {decoded_refresh_payload}")
-    except Exception as e:
-        print(f"Error verifying refresh token: {e}")
-
-    # Refresh the access token
-    try:
-        new_access_token = refresh_access_token(refresh_token)
-        print(f"New Access Token: {new_access_token}")
-    except Exception as e:
-        print(f"Error refreshing access token: {e}")
-
-    decoded_access_payload = verify_access_token(
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsInVzZXJuYW1lIjoiZXhhbXBsZV91c2VyIiwiZXhwIjoxNzM1MzgzNzg3fQ.UZ7X5dxTXCL-z0x8PQOl5nCAwUaN18Ws2IIq21Ja-mU"
-    )
-    print(f"Decoded Access Payload: {decoded_access_payload}")

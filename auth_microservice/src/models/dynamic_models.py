@@ -8,7 +8,7 @@ from pydantic import create_model, field_validator, model_validator
 from sqlmodel import Field, SQLModel
 from dotenv import load_dotenv
 
-from auth_microservice.src.password_utils import hash_password
+from ..password_utils import hash_password
 
 
 load_dotenv()
@@ -97,14 +97,14 @@ field_definitions = {}
 if USERNAME_FIELD:
     field_definitions[USERNAME_FIELD] = (
         Optional[str],
-        Field(min_length=1, default=None),
+        Field(min_length=1, default=None, unique=True),
     )
 
 
 if EMAIL_FIELD:
     field_definitions[EMAIL_FIELD] = (
         Optional[str],
-        Field(min_length=1, default=None),
+        Field(min_length=1, default=None, unique=True),
     )
     validators["validate_email_"] = field_validator(EMAIL_FIELD)(
         validate_email_
@@ -113,7 +113,7 @@ if EMAIL_FIELD:
 if PHONE_FIELD:
     field_definitions[PHONE_FIELD] = (
         Optional[str],
-        Field(min_length=11, max_length=12, default=None),
+        Field(min_length=11, max_length=12, default=None, unique=True),
     )
     validators["validate_phone"] = field_validator(PHONE_FIELD)(validate_phone)
 
@@ -210,28 +210,4 @@ UserBaseDBType = create_model(
     __base__=UserBaseType,
     __validators__=validators,
     **field_definitions,
-)
-
-field_definitions = {}
-validators = {}
-field_definitions[ID_FIELD] = (
-    uuid.UUID,
-    Field(default_factory=uuid.uuid4, primary_key=True),
-)
-field_definitions["__tablename__"] = (str, TABLE_NAME)
-# UserType = create_model(
-#     "User",
-#     __base__=UserCreateType,
-#     __validators__=validators,
-#     **field_definitions,
-#     __cls_kwargs__={"table": True},
-# )
-validators["validate"] = model_validator(mode="before")(validate_from_db)
-
-UserDBType = create_model(
-    "User",
-    __base__=UserCreateType,
-    __validators__=validators,
-    **field_definitions,
-    __cls_kwargs__={"table": True},
 )

@@ -1,3 +1,4 @@
+import copy
 import re
 from email_validator import EmailNotValidError, validate_email
 from typing import AsyncGenerator, Optional, Self
@@ -127,3 +128,29 @@ class User(UserCreate, table=True):
     __tablename__: str = "users"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+
+class UserDB(UserCreate, table=True):
+    __tablename__: str = "users"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate(cls, dict_values: dict) -> dict:
+        if any(
+            True
+            for key, item in dict_values.items()
+            if key in ["username", "email", "phone"] and item
+        ):
+            copy_dict = copy.deepcopy(dict_values)
+            for k, v in copy_dict.items():
+                if (
+                    not v
+                    or k not in cls.model_json_schema()["properties"].keys()
+                ):
+                    del dict_values[k]
+            return dict_values
+        raise ValueError(
+            "At least one of username, email or phone must be provided"
+        )

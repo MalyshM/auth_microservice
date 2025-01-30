@@ -1,16 +1,17 @@
 from typing import Sequence
+from uuid import UUID
 from sqlmodel import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from auth_microservice.src.dynamic_models import (
+from ..models.dynamic_models import (
     ID_FIELD,
     UserBase,
     UserBaseType,
-    UserDBType,
     UserPublicType,
     UserPublicDBType,
     UserCreateType,
 )
-from sqlalchemy.exc import IntegrityError
+from ..models.dynamic_db_models import UserDBType
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from fastapi import HTTPException
 
 
@@ -30,8 +31,10 @@ class UserView:
 
     @classmethod
     async def create_user(
-        cls, user: UserCreateType, session: AsyncSession
-    ) -> UserPublicType:
+        cls,
+        user: UserCreateType,  # type: ignore this is class, not var
+        session: AsyncSession,
+    ) -> UserPublicType:  # type: ignore this is class, not var
         try:
             async with session.begin():
                 db_user = UserDBType(**user.model_dump())
@@ -39,14 +42,17 @@ class UserView:
         except IntegrityError as e:
             await session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"User  could not be created. {e}"
+                status_code=400, detail=f"User could not be created. {e}"
             )
-        return UserPublicDBType(**db_user.model_dump(exclude_none=True))
+
+        return await UserView.form_rsp_list([db_user])
 
     @classmethod
     async def update_user(
-        cls, user: UserPublicDBType, session: AsyncSession
-    ) -> UserPublicType:
+        cls,
+        user: UserPublicDBType,  # type: ignore this is class, not var
+        session: AsyncSession,
+    ) -> UserPublicType:  # type: ignore this is class, not var
         try:
             async with session.begin():
                 await session.execute(
@@ -57,21 +63,26 @@ class UserView:
         except IntegrityError as e:
             await session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"User  could not be created. {e}"
+                status_code=400, detail=f"User could not be updated. {e}"
             )
-        return UserPublicDBType(**user.model_dump(exclude_none=True))
+        return await UserView.form_rsp_list([user])
 
     @classmethod
-    async def get_user(cls, user_id: str, session: AsyncSession) -> Sequence:
-        result = await session.execute(
-            select(UserDBType).where(getattr(UserDBType, ID_FIELD) == user_id)
-        )
-        result = result.scalars().all()
-        return await UserView.form_rsp_list(result)
+    async def get_user(cls, user_id: UUID, session: AsyncSession) -> Sequence:
+        try:
+            result = await session.execute(
+                select(UserDBType).where(
+                    getattr(UserDBType, ID_FIELD) == user_id
+                )
+            )
+            result = result.scalars().one()
+        except NoResultFound as e:
+            raise HTTPException(status_code=404, detail=f"User not found. {e}")
+        return await UserView.form_rsp_list([result])
 
     @classmethod
     async def delete_user(
-        cls, user_id: str, session: AsyncSession
+        cls, user_id: UUID, session: AsyncSession
     ) -> list[dict]:
         try:
             async with session.begin():
@@ -84,12 +95,14 @@ class UserView:
         except IntegrityError as e:
             await session.rollback()
             raise HTTPException(
-                status_code=400, detail=f"User  could not be deleted. {e}"
+                status_code=400, detail=f"User could not be deleted. {e}"
             )
 
     @classmethod
     async def get_users_by_field(
-        cls, user: UserBaseType, session: AsyncSession
+        cls,
+        user: UserBaseType,  # type: ignore this is class, not var
+        session: AsyncSession,
     ) -> Sequence:
         field, text = user.get_valid_field
         result = await session.execute(

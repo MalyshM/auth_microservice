@@ -5,12 +5,12 @@ from starlette.middleware.cors import CORSMiddleware
 
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from auth_microservice.src.logger import base_logger
+from .logger import base_logger
 from starlette.middleware.base import _StreamingResponse
-from auth_microservice.src.routers.auth_router import auth_router
-from auth_microservice.src.routers.reg_log_router import reg_log_router
-from auth_microservice.src.routers.user_router import user_router
-from auth_microservice.src.routers.ui_router import ui_router
+from .routers.auth_router import auth_router
+from .routers.reg_log_router import reg_log_router
+from .routers.user_router import user_router
+from .routers.ui_router import ui_router
 
 
 def get_application() -> FastAPI:
