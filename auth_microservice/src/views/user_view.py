@@ -73,8 +73,8 @@ class UserView:
         result = await session.execute(
             select(UserDBType).where(getattr(UserDBType, ID_FIELD) == user_id)
         )
-        result = result.scalars().all()
-        return await UserView.form_rsp_list(result)
+        result = result.scalars().one()
+        return await UserView.form_rsp_list([result])
 
     @classmethod
     async def delete_user(
