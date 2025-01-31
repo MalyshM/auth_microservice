@@ -97,14 +97,32 @@ field_definitions = {}
 if USERNAME_FIELD:
     field_definitions[USERNAME_FIELD] = (
         Optional[str],
-        Field(min_length=1, default=None, unique=True),
+        Field(
+            min_length=1,
+            default=None,
+            unique=True,
+            title="Username",
+            description=(
+                "The username of the user. Must "
+                "be at least 1 character long and unique."
+            ),
+        ),
     )
 
 
 if EMAIL_FIELD:
     field_definitions[EMAIL_FIELD] = (
         Optional[str],
-        Field(min_length=1, default=None, unique=True),
+        Field(
+            min_length=1,
+            default=None,
+            unique=True,
+            title="Email",
+            description=(
+                "The email address of the user. Must "
+                "be a valid email format and unique."
+            ),
+        ),
     )
     validators["validate_email_"] = field_validator(EMAIL_FIELD)(
         validate_email_
@@ -113,7 +131,17 @@ if EMAIL_FIELD:
 if PHONE_FIELD:
     field_definitions[PHONE_FIELD] = (
         Optional[str],
-        Field(min_length=11, max_length=12, default=None, unique=True),
+        Field(
+            min_length=11,
+            max_length=12,
+            default=None,
+            unique=True,
+            title="Phone Number",
+            description=(
+                "The phone number of the user. Must "
+                "be between 11 and 12 characters long and unique."
+            ),
+        ),
     )
     validators["validate_phone"] = field_validator(PHONE_FIELD)(validate_phone)
 
@@ -159,7 +187,19 @@ def _validate(cls, value: str) -> str:
 
 
 field_definitions = {}
-field_definitions[PASSWORD_FIELD] = (str, Field(min_length=9))
+field_definitions[PASSWORD_FIELD] = (
+    str,
+    Field(
+        min_length=9,
+        title="Password",
+        description=(
+            "The password of the user. Must "
+            "be greater than 8 characters long, "
+            "have at least one uppercase letter and "
+            "one lowercase letter and one number."
+        ),
+    ),
+)
 validators = {}
 validators["_validate"] = field_validator(PASSWORD_FIELD)(_validate)
 UserCreateType = create_model(
