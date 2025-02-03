@@ -42,7 +42,6 @@ class UserView:
                 db_user = UserDBType(**user.model_dump())
                 session.add(db_user)
         except IntegrityError as e:
-            await session.rollback()
             raise HTTPException(
                 status_code=400, detail=f"User could not be created. {e}"
             )
@@ -63,7 +62,6 @@ class UserView:
                     .values(**user.model_dump(exclude_none=True))
                 )
         except IntegrityError as e:
-            await session.rollback()
             raise HTTPException(
                 status_code=400, detail=f"User could not be updated. {e}"
             )
@@ -95,7 +93,6 @@ class UserView:
                 )
             return [{"status": "success"}]
         except IntegrityError as e:
-            await session.rollback()
             raise HTTPException(
                 status_code=400, detail=f"User could not be deleted. {e}"
             )

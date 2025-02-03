@@ -7,6 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from ..connection import connect_db_data
+from ..docs.responses import (
+    reg_response_400,
+    response_400_general,
+    response_401,
+    response_403,
+    response_404,
+)
 from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     ID_FIELD,
@@ -22,7 +29,16 @@ reg_log_router = APIRouter(tags=["Registration/Login"])
 
 @reg_log_router.post(
     "/register",
+    summary="Register a New User",
+    description=(
+        "Registers a new user by creating a new user account. "
+        "If the user already exists, it attempts to log in the user instead."
+    ),
     response_model=Sequence[UserPublicDBType],
+    responses={
+        401: response_401,
+        400: reg_response_400,
+    },
 )
 async def register_user(
     request: Request,
@@ -50,19 +66,17 @@ async def register_user(
 
 @reg_log_router.post(
     "/login",
+    summary="Log In a User",
+    description=(
+        "Logs in a user by verifying their credentials. "
+        "If successful, returns the user's public information."
+    ),
     response_model=Sequence[UserPublicDBType],
     responses={
-        401: {
-            "description": (
-                "Unauthorized. The user is not "
-                "authenticated or the token is invalid."
-            ),
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Not authenticated"},
-                }
-            },
-        },
+        401: response_401,
+        400: response_400_general,
+        403: response_403,
+        404: response_404,
     },
 )
 async def login_user(
