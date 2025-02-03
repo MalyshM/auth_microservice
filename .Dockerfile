@@ -17,6 +17,8 @@ ENV PATH="/srv/.venv/bin:$PATH"
 COPY auth_microservice/ /srv/auth_microservice/
 
 RUN make test
+RUN make check
+RUN make format
 
 EXPOSE 8090
 
