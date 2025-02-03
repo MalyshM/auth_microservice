@@ -228,7 +228,17 @@ def validate_from_db(cls, dict_values: dict) -> dict:
 
 field_definitions = {}
 validators = {}
-field_definitions[ID_FIELD] = (uuid.UUID, ...)
+field_definitions[ID_FIELD] = (
+    uuid.UUID,
+    Field(
+        title="User  ID",
+        description=(
+            "The unique identifier for the user. "
+            "This should be a valid UUID format."
+        ),
+        unique=True,
+    ),
+)
 UserPublicType = create_model(
     "UserPublic",
     __base__=UserBaseType,
