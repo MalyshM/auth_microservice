@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
+from ..docs.responses import auth_200, response_401
 from ..models.dynamic_models import ID_FIELD
 from ..token_utils import (
     refresh_access_token,
     verify_access_token,
     verify_refresh_token,
 )
-from ..docs.responses import auth_200, response_401
 
 auth_router = APIRouter(tags=["Auth"])
 
@@ -60,10 +60,14 @@ async def auth(
                 else None
             )
             if not refresh_token:
-                raise HTTPException(status_code=401, detail="Not authenticated")
+                raise HTTPException(
+                    status_code=401, detail="Not authenticated"
+                )
             payload = verify_refresh_token(refresh_token)
             if not payload:
-                raise HTTPException(status_code=401, detail="Not authenticated")
+                raise HTTPException(
+                    status_code=401, detail="Not authenticated"
+                )
             response = JSONResponse(content=payload[ID_FIELD], status_code=200)
             refresh_access_token(response, cookies["refresh_token"])
             return response

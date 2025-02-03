@@ -1,15 +1,15 @@
 import copy
 import os
 import re
-from typing import Optional
 import uuid
+from typing import Optional
+
+from dotenv import load_dotenv
 from email_validator import EmailNotValidError, validate_email
 from pydantic import create_model, field_validator, model_validator
 from sqlmodel import Field, SQLModel
-from dotenv import load_dotenv
 
 from ..password_utils import hash_password
-
 
 load_dotenv()
 USERNAME_FIELD = os.getenv("USERNAME_FIELD", "")

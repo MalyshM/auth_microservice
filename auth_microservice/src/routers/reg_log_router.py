@@ -1,22 +1,21 @@
 from typing import Sequence
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from ..connection import connect_db_data
-from sqlmodel import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
+from ..connection import connect_db_data
+from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     ID_FIELD,
     PASSWORD_FIELD,
-    UserPublicDBType,
     UserCreateType,
+    UserPublicDBType,
 )
-from ..models.dynamic_db_models import UserDBType
 from ..routers.user_router import get_my_user
-from ..token_utils import (
-    set_refresh_token_cookie,
-)
+from ..token_utils import set_refresh_token_cookie
 
 reg_log_router = APIRouter(tags=["Registration/Login"])
 
@@ -27,9 +26,9 @@ reg_log_router = APIRouter(tags=["Registration/Login"])
 )
 async def register_user(
     request: Request,
-    user: UserCreateType,  # type: ignore this is class, not var
+    user: UserCreateType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-) -> JSONResponse:  # type: ignore this is class, not var
+) -> JSONResponse:  # type: ignore # this is class, not var
     try:
         return await get_my_user(request, session)
     except HTTPException:
@@ -52,12 +51,25 @@ async def register_user(
 @reg_log_router.post(
     "/login",
     response_model=Sequence[UserPublicDBType],
+    responses={
+        401: {
+            "description": (
+                "Unauthorized. The user is not "
+                "authenticated or the token is invalid."
+            ),
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Not authenticated"},
+                }
+            },
+        },
+    },
 )
 async def login_user(
     request: Request,
-    user: UserCreateType,  # type: ignore this is class, not var
+    user: UserCreateType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-) -> JSONResponse:  # type: ignore this is class, not var
+) -> JSONResponse:  # type: ignore # this is class, not var
     try:
         return await get_my_user(request, session)
     except HTTPException:

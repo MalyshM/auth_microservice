@@ -1,21 +1,19 @@
 from typing import Optional, Sequence
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from ..connection import connect_db_data
 from ..dependencies.auth_dependency import auth_dependency
 from ..models.dynamic_models import (
     ID_FIELD,
     UserBaseType,
-    UserPublicDBType,
     UserCreateType,
+    UserPublicDBType,
 )
-
-from ..token_utils import (
-    refresh_access_token,
-    verify_refresh_token,
-)
+from ..token_utils import refresh_access_token, verify_refresh_token
 from ..views.user_view import UserView
 
 
@@ -40,7 +38,7 @@ user_router = APIRouter(
 )
 async def post_user(
     request: Request,
-    user: UserCreateType,  # type: ignore this is class, not var
+    user: UserCreateType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
@@ -103,7 +101,7 @@ async def get_user(
 )
 async def get_users_by_field(
     request: Request,
-    user: UserBaseType,  # type: ignore this is class, not var
+    user: UserBaseType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
@@ -118,7 +116,7 @@ async def get_users_by_field(
 )
 async def update_user(
     request: Request,
-    user: UserPublicDBType,  # type: ignore this is class, not var
+    user: UserPublicDBType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:

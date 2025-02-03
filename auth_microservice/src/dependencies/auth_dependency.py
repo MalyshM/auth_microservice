@@ -1,5 +1,7 @@
 from typing import Optional
+
 from fastapi import HTTPException, Request
+
 from ..logger import base_logger
 from ..routers.auth_router import auth
 

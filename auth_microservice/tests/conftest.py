@@ -1,15 +1,15 @@
-from fastapi.testclient import TestClient
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import (
-    async_sessionmaker,
-    AsyncSession,
-    create_async_engine,
-)
 from typing import AsyncGenerator
 
-from src.models.dynamic_db_models import UserDBType
+import pytest_asyncio
+from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from src.connection import connect_db_data
 from src.main import app
+from src.models.dynamic_db_models import UserDBType
 
 
 @pytest_asyncio.fixture

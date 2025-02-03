@@ -1,11 +1,13 @@
+import datetime
 import os
 from typing import Optional
-from fastapi import Response
+
 import jwt
-import datetime
 from dotenv import load_dotenv
-from .models.dynamic_models import UserPublicType
+from fastapi import Response
+
 from .logger import base_logger
+from .models.dynamic_models import UserPublicType
 
 load_dotenv()
 ID_FIELD = os.getenv("ID_FIELD", "")
@@ -73,7 +75,7 @@ def refresh_access_token(response: Response, refresh_token: str) -> None:
 
 def set_cookie_tokens(
     response: Response,
-    rsp_body: UserPublicType,  # type: ignore this is class, not var
+    rsp_body: UserPublicType,  # type: ignore # this is class, not var
 ):
     set_access_token_cookie(response, rsp_body)
     set_refresh_token_cookie(response, rsp_body)
@@ -81,7 +83,7 @@ def set_cookie_tokens(
 
 def set_access_token_cookie(
     response: Response,
-    rsp_body: UserPublicType,  # type: ignore this is class, not var
+    rsp_body: UserPublicType,  # type: ignore # this is class, not var
 ):
     access_token = create_access_token({ID_FIELD: getattr(rsp_body, ID_FIELD)})
     response.set_cookie(
@@ -92,7 +94,7 @@ def set_access_token_cookie(
 
 def set_refresh_token_cookie(
     response: Response,
-    rsp_body: UserPublicType,  # type: ignore this is class, not var
+    rsp_body: UserPublicType,  # type: ignore # this is class, not var
 ):
     refresh_token = create_refresh_token(
         {ID_FIELD: getattr(rsp_body, ID_FIELD)}

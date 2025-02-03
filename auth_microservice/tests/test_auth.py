@@ -1,12 +1,10 @@
 import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from src.routers.auth_router import auth_router
-from src.token_utils import (
-    create_access_token,
-    create_refresh_token,
-)
-from dotenv import load_dotenv
+from src.token_utils import create_access_token, create_refresh_token
 
 load_dotenv()
 ID_FIELD = os.getenv("ID_FIELD", "")

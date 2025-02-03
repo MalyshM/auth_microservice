@@ -1,7 +1,8 @@
-import sys
-from loguru import logger
 import os
+import sys
+
 from dotenv import load_dotenv
+from loguru import logger
 
 load_dotenv()
 
