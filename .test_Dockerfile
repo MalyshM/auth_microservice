@@ -9,7 +9,7 @@ COPY .python-version /srv/.python-version
 COPY pyproject.toml /srv/pyproject.toml
 COPY uv.lock /srv/uv.lock
 COPY Makefile /srv/Makefile
-COPY .env /srv/.env
+COPY .env.example /srv/.env
 
 RUN uv sync --frozen --dev
 ENV PATH="/srv/.venv/bin:$PATH"

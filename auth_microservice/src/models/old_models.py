@@ -1,13 +1,16 @@
 import copy
 import re
-from email_validator import EmailNotValidError, validate_email
-from typing import AsyncGenerator, Optional, Self
 import uuid
+from typing import AsyncGenerator, Optional, Self
+
+from email_validator import EmailNotValidError, validate_email
 from pydantic import field_validator, model_validator
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlmodel import Field, SQLModel
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.asyncio import async_sessionmaker
 
 DATABASE_URL = "postgresql+asyncpg://postgres:admin@localhost/auth_users"
 
@@ -53,7 +56,9 @@ class UserBase(SQLModel):
     @model_validator(mode="after")
     def check_not_none(self) -> Self:
         if any(
-            True for key in ["username", "email", "phone"] if getattr(self, key)
+            True
+            for key in ["username", "email", "phone"]
+            if getattr(self, key)
         ):
             return self
         raise ValueError(
@@ -124,10 +129,10 @@ class UserPublic(UserBase):
     id: uuid.UUID
 
 
-class User(UserCreate, table=True):
-    __tablename__: str = "users"
+# class User(UserCreate, table=True):
+#     __tablename__: str = "users"
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+#     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
 
 class UserDB(UserCreate, table=True):

@@ -1,18 +1,20 @@
 from typing import Sequence
 from uuid import UUID
-from sqlmodel import select, update, delete
+
+from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import delete, select, update
+
+from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     ID_FIELD,
     UserBase,
     UserBaseType,
-    UserPublicType,
-    UserPublicDBType,
     UserCreateType,
+    UserPublicDBType,
+    UserPublicType,
 )
-from ..models.dynamic_db_models import UserDBType
-from sqlalchemy.exc import IntegrityError, NoResultFound
-from fastapi import HTTPException
 
 
 class UserView:
@@ -32,9 +34,9 @@ class UserView:
     @classmethod
     async def create_user(
         cls,
-        user: UserCreateType,  # type: ignore this is class, not var
+        user: UserCreateType,  # type: ignore # this is class, not var
         session: AsyncSession,
-    ) -> UserPublicType:  # type: ignore this is class, not var
+    ) -> UserPublicType:  # type: ignore # this is class, not var
         try:
             async with session.begin():
                 db_user = UserDBType(**user.model_dump())
@@ -50,9 +52,9 @@ class UserView:
     @classmethod
     async def update_user(
         cls,
-        user: UserPublicDBType,  # type: ignore this is class, not var
+        user: UserPublicDBType,  # type: ignore # this is class, not var
         session: AsyncSession,
-    ) -> UserPublicType:  # type: ignore this is class, not var
+    ) -> UserPublicType:  # type: ignore # this is class, not var
         try:
             async with session.begin():
                 await session.execute(
@@ -101,7 +103,7 @@ class UserView:
     @classmethod
     async def get_users_by_field(
         cls,
-        user: UserBaseType,  # type: ignore this is class, not var
+        user: UserBaseType,  # type: ignore # this is class, not var
         session: AsyncSession,
     ) -> Sequence:
         field, text = user.get_valid_field

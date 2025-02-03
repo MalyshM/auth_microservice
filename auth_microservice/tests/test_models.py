@@ -1,14 +1,14 @@
-from src.password_utils import hash_password
+import pytest
 from src.models.dynamic_models import (
+    EMAIL_FIELD,
+    PASSWORD_FIELD,
+    PHONE_FIELD,
+    USERNAME_FIELD,
+    UserBaseDBType,
     UserBaseType,
     UserCreateType,
-    UserBaseDBType,
-    USERNAME_FIELD,
-    EMAIL_FIELD,
-    PHONE_FIELD,
-    PASSWORD_FIELD,
 )
-import pytest
+from src.password_utils import hash_password
 
 
 # UserBaseType

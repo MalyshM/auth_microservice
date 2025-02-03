@@ -12,6 +12,7 @@ Before starting the application, ensure you have the following installed:
 - PostgreSQL
 - `uv` (Python package manager)
 - `make` (optional, for convenience)
+- Docker (optional, for containerized deployment)
 
 ---
 
@@ -36,7 +37,10 @@ Install the required dependencies using `uv`:
 ```bash
 uv sync
 ```
-
+or
+```bash
+uv sync --group dev -U
+```
 ### 3. Set Up Virtual Environment
 
 Ensure you are using the correct Python interpreter. Activate the virtual environment (`.venv`):
@@ -68,6 +72,46 @@ Alternatively, you can start the application manually using the appropriate comm
 
 ---
 
+## Docker
+
+You can also run the application using Docker for containerized deployment.
+
+### Build the Docker Image
+
+```bash
+docker build -t auth-microservice -f .Dockerfile .
+```
+
+### Run the Docker Container
+
+To run the container in the foreground:
+
+```bash
+docker run --name auth-microservice-container -p 8090:8090 auth-microservice
+```
+
+To run the container in the background (detached mode):
+
+```bash
+docker run -d --name auth-microservice-container -p 8090:8090 auth-microservice
+```
+
+### Stop the Docker Container
+
+```bash
+docker stop auth-microservice-container
+```
+### Remove the Docker Container
+```bash
+docker rm auth-microservice-container
+```
+### Start a Stopped Container
+
+To start a previously stopped container (replace `cc2b2afb4c9c` with your container ID):
+```bash
+docker start cc2b2afb4c9c
+```
+---
 
 ## Contributing
 
