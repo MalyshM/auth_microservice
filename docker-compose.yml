@@ -1,18 +1,6 @@
 version: '3.8'
 
 services:
-  auth-microservice:
-    build:
-      context: .
-      dockerfile: .Dockerfile
-    container_name: auth-microservice
-    ports:
-      - "8090:8090"
-    env_file:
-      - .env.docker
-    depends_on:
-      - postgresql
-
   postgresql:
     image: postgres:latest
     container_name: postgresql
@@ -24,3 +12,15 @@ services:
       - "6666:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+  auth-microservice:
+    build:
+      context: .
+      dockerfile: .Dockerfile
+    container_name: auth-microservice
+    ports:
+      - "8090:8090"
+    env_file:
+      - .env.docker
+    depends_on:
+      - postgresql
+    entrypoint: ["/bin/sh", "-c", "sleep 10 && uv run auth_microservice/src/create_db.py"]
