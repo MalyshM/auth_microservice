@@ -25,7 +25,9 @@ from ..views.user_view import UserView
 
 
 def make_resp(
-    res: Sequence, request: Request, set_cookie: Optional[str] = None
+    res: Sequence[dict] | dict,
+    request: Request,
+    set_cookie: Optional[str] = None,
 ):
     response = JSONResponse(content=res, status_code=200)
     if set_cookie:
@@ -57,7 +59,7 @@ async def post_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.create_user(user, session)
+    res = await UserView.create(user, session)
     return make_resp(res, request, set_cookie)
 
 
@@ -73,7 +75,7 @@ async def get_users(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.get_users(session)
+    res = await UserView.read_all(session)
     return make_resp(res, request, set_cookie)
 
 
@@ -97,7 +99,7 @@ async def get_my_user(
     payload = verify_refresh_token(request.cookies["refresh_token"])
     if not payload:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    res = await UserView.get_user(UUID(payload[ID_FIELD]), session)
+    res = await UserView.read(UUID(payload[ID_FIELD]), session)
     return make_resp(res, request, set_cookie)
 
 
@@ -117,7 +119,7 @@ async def get_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.get_user(UUID(user_id), session)
+    res = await UserView.read(UUID(user_id), session)
     return make_resp(res, request, set_cookie)
 
 
@@ -134,6 +136,7 @@ async def get_users_by_field(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    # TODO: этого метода нет, добавить
     res = await UserView.get_users_by_field(user, session)
     return make_resp(res, request, set_cookie)
 
@@ -154,7 +157,7 @@ async def update_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.update_user(user, session)
+    res = await UserView.update(user, session)
     return make_resp(res, request, set_cookie)
 
 
@@ -172,5 +175,5 @@ async def delete_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.delete_user(UUID(user_id), session)
+    res = await UserView.delete(UUID(user_id), session)
     return make_resp(res, request, set_cookie)
