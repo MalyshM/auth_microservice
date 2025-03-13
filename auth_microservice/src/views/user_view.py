@@ -10,7 +10,7 @@ from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     ID_FIELD,
     UserBase,
-    UserBaseType,
+    UserBaseNotValidateType,
     UserCreateType,
     UserPublicDBType,
     UserPublicType,
@@ -100,7 +100,7 @@ class UserView:
     @classmethod
     async def get_users_by_field(
         cls,
-        user: UserBaseType,  # type: ignore # this is class, not var
+        user: UserBaseNotValidateType,  # type: ignore # this is class, not var
         session: AsyncSession,
     ) -> Sequence:
         field, text = user.get_valid_field
