@@ -132,8 +132,8 @@ if PHONE_FIELD:
     field_definitions[PHONE_FIELD] = (
         Optional[str],
         Field(
-            min_length=11,
-            max_length=12,
+            # min_length=11,
+            # max_length=12,
             default=None,
             unique=True,
             title="Phone Number",
@@ -161,6 +161,12 @@ class UserBase(SQLModel):
                 return key, getattr(self, key)
         return "", ""
 
+
+UserBaseNotValidateType = create_model(
+    "UserBase",
+    __base__=UserBase,
+    **field_definitions,
+)
 
 UserBaseType = create_model(
     "UserBase",
