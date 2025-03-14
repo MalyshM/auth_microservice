@@ -2,17 +2,14 @@ from typing import Sequence
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth_microservice.src.crud.base_generic_crud import CRUD
+from auth_microservice.src.crud.user_crud import UserCRUD
 from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     UserBase,
     UserCreateType,
     UserPublicDBType,
+    UserBaseNotValidateType,
 )
-
-
-class UserCRUD(CRUD[UserPublicDBType, UserCreateType, UserDBType]):
-    pass
 
 
 class UserView:
@@ -46,8 +43,8 @@ class UserView:
 
     @classmethod
     async def read_all(cls, session: AsyncSession) -> Sequence[dict]:
-        user = await UserView.user_crud.read_all(session)
-        return UserView.create_rsp_list(user)
+        users = await UserView.user_crud.read_all(session)
+        return UserView.create_rsp_list(users)
 
     @classmethod
     async def update(
@@ -62,3 +59,12 @@ class UserView:
     async def delete(cls, id: UUID, session: AsyncSession) -> dict:
         user = await UserView.user_crud.delete(id, session)
         return UserView.create_rsp(user)
+
+    @classmethod
+    async def get_users_by_field(
+        cls,
+        obj: UserBaseNotValidateType,  # type: ignore # this is class, not var
+        session: AsyncSession,
+    ) -> Sequence[dict]:
+        users = await UserView.user_crud.get_users_by_field(obj, session)
+        return UserView.create_rsp_list(users)
