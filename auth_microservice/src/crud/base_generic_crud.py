@@ -84,7 +84,6 @@ class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
 
     async def update(self, obj: T, session: AsyncSession) -> T:
         try:
-            # TODO: мб не будет работать потому что не нестед
             async with session.begin():
                 await session.execute(
                     update(self.db_entity)
@@ -102,7 +101,6 @@ class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
 
     async def delete(self, id: UUID, session: AsyncSession) -> T:
         try:
-            # TODO: мб не будет работать потому что не нестед
             async with session.begin():
                 deleted_row = await self.read(id, session)
                 await session.execute(

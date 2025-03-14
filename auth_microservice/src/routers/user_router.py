@@ -136,7 +136,6 @@ async def get_users_by_field(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    # TODO: этого метода нет, добавить
     res = await UserView.get_users_by_field(user, session)
     return make_resp(res, request, set_cookie)
 
@@ -149,6 +148,7 @@ async def get_users_by_field(
     response_model_exclude_none=True,
     responses={
         400: update_response_400,
+        404: response_404,
     },
 )
 async def update_user(
@@ -167,6 +167,7 @@ async def update_user(
     description="Deletes a user from the system by their unique ID.",
     responses={
         400: delete_response_400,
+        404: response_404,
     },
 )
 async def delete_user(
