@@ -16,9 +16,9 @@ from ..docs.responses import (
 )
 from ..models.dynamic_models import (
     ID_FIELD,
+    UserBaseNotValidateType,
     UserCreateType,
     UserPublicDBType,
-    UserBaseNotValidateType,
 )
 from ..token_utils import refresh_access_token, verify_refresh_token
 from ..views.user_view import UserView

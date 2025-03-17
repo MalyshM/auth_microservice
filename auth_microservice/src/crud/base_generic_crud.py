@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Generic, Sequence, Type, TypeVar
 from uuid import UUID
-from sqlmodel import SQLModel, delete, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError, NoResultFound
+
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import SQLModel, delete, select, update
 
 from ..models.dynamic_models import ID_FIELD
 
@@ -60,21 +61,21 @@ class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
 
     async def read(self, id: UUID, session: AsyncSession) -> T:
         try:
-            result = await session.execute(
+            select_result = await session.execute(
                 select(self.db_entity).where(
                     getattr(self.db_entity, ID_FIELD) == id
                 )
             )
-            result = result.scalars().one()
+            result = select_result.scalars().one()
         except NoResultFound as e:
             raise HTTPException(status_code=404, detail=f"User not found. {e}")
         return self.entity(**result.model_dump())
 
     async def read_all(self, session: AsyncSession) -> Sequence[T]:
         result = await session.execute(select(self.db_entity))
-        result = result.scalars().all()
+        result_list = result.scalars().all()
         rsp_list = []
-        for item in result:
+        for item in result_list:
             rsp_list.append(
                 self.entity(
                     **item.model_dump(exclude_none=True, serialize_as_any=True)

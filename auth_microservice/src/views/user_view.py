@@ -1,14 +1,15 @@
 from typing import Sequence
 from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..crud.user_crud import UserCRUD
 from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     UserBase,
+    UserBaseNotValidateType,
     UserCreateType,
     UserPublicDBType,
-    UserBaseNotValidateType,
 )
 
 
