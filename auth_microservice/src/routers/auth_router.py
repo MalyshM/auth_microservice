@@ -1,7 +1,17 @@
-from fastapi import APIRouter, HTTPException, Request, Response
+import json
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
-from ..docs.responses import auth_200, response_401
+from ..connection import connect_db_data
+
+from ..password_utils import generate_code_challenge
+
+from ..routers.pkce_router import post_pkce, pkce_by_host
+
+from ..schemes.pkce_sheme import PKCE_scheme
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..docs.responses import auth_200, response_401, auth_403
 from ..models.dynamic_models import ID_FIELD
 from ..token_utils import (
     refresh_access_token,
@@ -12,7 +22,7 @@ from ..token_utils import (
 auth_router = APIRouter(tags=["Auth"])
 
 
-@auth_router.get(
+@auth_router.post(
     "/auth",
     summary="Authenticate User",
     description=(
@@ -22,10 +32,13 @@ auth_router = APIRouter(tags=["Auth"])
     responses={
         200: auth_200,
         401: response_401,
+        403: auth_403,
     },
 )
 async def auth(
     request: Request,
+    pkce_sheme: PKCE_scheme,
+    session: AsyncSession = Depends(connect_db_data),
 ) -> Response:
     """
     Authenticates the user by checking the access token or refreshing it using
@@ -46,6 +59,17 @@ async def auth(
     - **JSONResponse**: The user GUID if authentication is successful.
     - **HTTPException**: 401 Unauthorized if authentication fails.
     """
+    if pkce_sheme.is_to_check():
+        code = generate_code_challenge(pkce_sheme.code_verifier or "")
+        pkce_res = await pkce_by_host(
+            request, request.headers["host"], session
+        )
+        assert isinstance(pkce_res.body, bytes)
+        pkce_dict = json.loads(pkce_res.body.decode("utf-8"))
+        if code != pkce_dict["code_challenge"]:
+            raise HTTPException(403, "Send true code_verifier")
+    else:
+        await post_pkce(request, pkce_sheme, session)
     cookies = request.cookies
     payload = (
         verify_access_token(cookies["access_token"])
