@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from fastapi import HTTPException
 
-from auth_microservice.src.models.dynamic_models import ID_FIELD
+from ..models.dynamic_models import ID_FIELD
 
 T = TypeVar("T", bound=SQLModel)
 CREATE_T = TypeVar("CREATE_T", bound=SQLModel)

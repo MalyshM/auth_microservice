@@ -2,7 +2,7 @@ from typing import Sequence
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth_microservice.src.crud.user_crud import UserCRUD
+from ..crud.user_crud import UserCRUD
 from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     UserBase,

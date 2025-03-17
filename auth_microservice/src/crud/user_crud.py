@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException
-from auth_microservice.src.crud.base_generic_crud import CRUD
+from .base_generic_crud import CRUD
 from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     UserBase,
