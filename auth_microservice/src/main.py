@@ -6,11 +6,13 @@ from fastapi.openapi.utils import get_openapi
 from starlette.middleware.base import _StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 
+
 from .logger import base_logger
 from .routers.auth_router import auth_router
 from .routers.reg_log_router import reg_log_router
 from .routers.ui_router import ui_router
 from .routers.user_router import user_router
+from .routers.pkce_router import pkce_router
 
 
 def get_application() -> FastAPI:
@@ -26,6 +28,7 @@ def get_application() -> FastAPI:
     application.include_router(auth_router)
     application.include_router(reg_log_router)
     application.include_router(user_router)
+    application.include_router(pkce_router)
     return application
 
 
@@ -37,6 +40,9 @@ async def log_requests(request: Request, call_next) -> Response:
     log_string = ""
     client_ip = f"user_ip: {request.client.host}" if request.client else ""
     log_string += f"Request: {request.method} {request.url}, {client_ip}\n"
+    headers = request.headers
+    if headers:
+        log_string += f"Request Headers: {headers}\n"
     cookies = request.cookies
     if cookies:
         log_string += f"Request Cookies: {cookies}\n"
