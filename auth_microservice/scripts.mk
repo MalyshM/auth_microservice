@@ -4,6 +4,11 @@ CONTAINER_NAME = auth-microservice-container
 SHELL = /bin/bash
 
 # scripts
+all:
+	make check \
+	format \
+	test
+
 test:
 	./auth_microservice/scripts/test.sh
 
