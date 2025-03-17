@@ -67,9 +67,8 @@ async def test_register_duplicate_user(
     assert client.cookies.get("refresh_token")
     assert client.cookies.get("access_token")
     rsp = response.json()
-    assert isinstance(rsp, list)
-    assert isinstance(rsp[0], dict)
-    assert rsp[0]["email"] == TEST_USER["email"]
+    assert isinstance(rsp, dict)
+    assert rsp["email"] == TEST_USER["email"]
 
 
 @pytest.mark.asyncio
@@ -82,9 +81,8 @@ async def test_login_user(client: TestClient, override_db_dependency):
     assert client.cookies.get("refresh_token")
     assert client.cookies.get("access_token")
     rsp = response.json()
-    assert isinstance(rsp, list)
-    assert isinstance(rsp[0], dict)
-    assert rsp[0]["email"] == TEST_USER["email"]
+    assert isinstance(rsp, dict)
+    assert rsp["email"] == TEST_USER["email"]
 
 
 @pytest.mark.asyncio
@@ -100,9 +98,8 @@ async def test_login_incorrect_password_with_refresh_token(
     assert client.cookies.get("access_token")
     assert client.cookies.get("refresh_token")
     rsp = response.json()
-    assert isinstance(rsp, list)
-    assert isinstance(rsp[0], dict)
-    assert rsp[0]["email"] == TEST_USER["email"]
+    assert isinstance(rsp, dict)
+    assert rsp["email"] == TEST_USER["email"]
 
 
 @pytest.mark.asyncio
@@ -138,7 +135,9 @@ async def test_login_correct_password(
 
 
 @pytest.mark.asyncio
-async def test_login_incorrect_user(client: TestClient, override_db_dependency):
+async def test_login_incorrect_user(
+    client: TestClient, override_db_dependency
+):
     assert client.cookies.get("refresh_token") is None
     response = client.post("/login", json=TEST_USER_NOT_EXISTS)
     assert response.status_code == 404
