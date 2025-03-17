@@ -16,7 +16,7 @@ from ..docs.responses import (
 )
 from ..models.dynamic_models import (
     ID_FIELD,
-    UserBaseType,
+    UserBaseNotValidateType,
     UserCreateType,
     UserPublicDBType,
 )
@@ -25,7 +25,9 @@ from ..views.user_view import UserView
 
 
 def make_resp(
-    res: Sequence, request: Request, set_cookie: Optional[str] = None
+    res: Sequence[dict] | dict,
+    request: Request,
+    set_cookie: Optional[str] = None,
 ):
     response = JSONResponse(content=res, status_code=200)
     if set_cookie:
@@ -57,7 +59,7 @@ async def post_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.create_user(user, session)
+    res = await UserView.create(user, session)
     return make_resp(res, request, set_cookie)
 
 
@@ -73,7 +75,7 @@ async def get_users(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.get_users(session)
+    res = await UserView.read_all(session)
     return make_resp(res, request, set_cookie)
 
 
@@ -97,7 +99,7 @@ async def get_my_user(
     payload = verify_refresh_token(request.cookies["refresh_token"])
     if not payload:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    res = await UserView.get_user(UUID(payload[ID_FIELD]), session)
+    res = await UserView.read(UUID(payload[ID_FIELD]), session)
     return make_resp(res, request, set_cookie)
 
 
@@ -117,7 +119,7 @@ async def get_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.get_user(UUID(user_id), session)
+    res = await UserView.read(UUID(user_id), session)
     return make_resp(res, request, set_cookie)
 
 
@@ -130,7 +132,7 @@ async def get_user(
 )
 async def get_users_by_field(
     request: Request,
-    user: UserBaseType,  # type: ignore # this is class, not var
+    user: UserBaseNotValidateType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
@@ -146,6 +148,7 @@ async def get_users_by_field(
     response_model_exclude_none=True,
     responses={
         400: update_response_400,
+        404: response_404,
     },
 )
 async def update_user(
@@ -154,7 +157,7 @@ async def update_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.update_user(user, session)
+    res = await UserView.update(user, session)
     return make_resp(res, request, set_cookie)
 
 
@@ -164,6 +167,7 @@ async def update_user(
     description="Deletes a user from the system by their unique ID.",
     responses={
         400: delete_response_400,
+        404: response_404,
     },
 )
 async def delete_user(
@@ -172,5 +176,5 @@ async def delete_user(
     session: AsyncSession = Depends(connect_db_data),
     set_cookie: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
-    res = await UserView.delete_user(UUID(user_id), session)
+    res = await UserView.delete(UUID(user_id), session)
     return make_resp(res, request, set_cookie)
