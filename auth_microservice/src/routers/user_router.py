@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Sequence
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -46,8 +46,8 @@ async def post_user(
     request: Request,
     user: UserCreateType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     res = await UserView.create(user, session)
@@ -64,8 +64,8 @@ async def post_user(
 async def get_users(
     request: Request,
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     res = await UserView.read_all(session)
@@ -85,8 +85,8 @@ async def get_users(
 async def get_my_user(
     request: Request,
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     if not request.cookies.get("refresh_token"):
@@ -112,8 +112,8 @@ async def get_user(
     request: Request,
     user_id: str,
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     res = await UserView.read(UUID(user_id), session)
@@ -131,8 +131,8 @@ async def get_users_by_field(
     request: Request,
     user: UserBaseNotValidateType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     res = await UserView.get_users_by_field(user, session)
@@ -154,8 +154,8 @@ async def update_user(
     request: Request,
     user: UserPublicDBType,  # type: ignore # this is class, not var
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     res = await UserView.update(user, session)
@@ -177,8 +177,8 @@ async def delete_user(
     request: Request,
     user_id: str,
     session: AsyncSession = Depends(connect_db_data),
-    is_auth: Optional[str] = Depends(auth_dependency),
 ) -> JSONResponse:
+    is_auth = await auth_dependency(request)
     if not is_auth:
         raise HTTPException(status_code=401, detail="You should be authorized")
     res = await UserView.delete(UUID(user_id), session)
