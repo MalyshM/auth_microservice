@@ -72,7 +72,7 @@ async def log_requests(request: Request, call_next) -> Response:
         content=response_body,
         status_code=response.status_code,
         media_type=response.media_type,
-        headers=dict(response.headers),
+        headers=response.headers,
     )
 
 
