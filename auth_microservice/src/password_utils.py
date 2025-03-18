@@ -1,3 +1,4 @@
+import base64
 import binascii
 import hashlib
 import os
@@ -14,3 +15,11 @@ def hash_password(password: str) -> str:
         "sha256", password.encode(), SALT.encode(), iterations
     )
     return binascii.hexlify(dk).decode()
+
+
+def generate_code_challenge(code_verifier: str) -> str:
+    sha256_hash = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+    code_challenge = (
+        base64.urlsafe_b64encode(sha256_hash).decode("utf-8").rstrip("=")
+    )
+    return code_challenge

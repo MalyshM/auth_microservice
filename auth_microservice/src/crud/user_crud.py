@@ -11,6 +11,7 @@ from .base_generic_crud import CRUD
 
 
 class UserCRUD(CRUD[UserPublicDBType, UserCreateType, UserDBType]):
+    name = "User"
 
     async def get_users_by_field(
         self, user: UserBase, session: AsyncSession
@@ -24,7 +25,10 @@ class UserCRUD(CRUD[UserPublicDBType, UserCreateType, UserDBType]):
             )
             result = result.scalars().all()
         except NoResultFound as e:
-            raise HTTPException(status_code=404, detail=f"User not found. {e}")
+            self.logger.error(e)
+            raise HTTPException(
+                status_code=404, detail=f"{self.name} not found."
+            )
         rsp_list = []
         for item in result:
             rsp_list.append(

@@ -103,3 +103,8 @@ def set_refresh_token_cookie(
         key="refresh_token",
         value=refresh_token,
     )
+
+
+def delete_cookie_tokens(response: Response):
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")

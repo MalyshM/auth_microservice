@@ -62,4 +62,34 @@ CREATE TABLE users (
     conn.close()
 
 
+def db_create_pkce_table():
+    conn = psycopg2.connect(
+        dbname=os.getenv("DB_NAME", ""),
+        user=os.getenv("DB_USER", ""),
+        password=os.getenv("DB_PASSWORD", ""),
+        host=os.getenv("DB_HOST", ""),
+    )
+    cursor = conn.cursor()
+    conn.autocommit = True
+    sql1 = f"""
+create extension if not exists "uuid-ossp";
+DROP TABLE IF EXISTS pkce CASCADE;
+CREATE TABLE pkce (
+    {os.getenv("ID_FIELD", "id")} UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    host VARCHAR(255) UNIQUE,
+    code_challenge VARCHAR(255) NOT NULL,
+    code_challenge_method VARCHAR(255) NOT NULL
+);
+    """
+    cursor.execute(sql1)
+    conn.commit()
+    print("PKCE database created successfully........")
+
+    # Closing the connection
+
+    cursor.close()
+    conn.close()
+
+
 db_create_users_table()
+db_create_pkce_table()

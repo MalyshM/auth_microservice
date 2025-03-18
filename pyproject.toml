@@ -67,6 +67,7 @@ disable_error_code = "misc"
 # Exclude files that actually right, but cause the error
 exclude = [
     "auth_microservice/src/models/dynamic_db_models.py",
+    "auth_microservice/src/models/pkce_models.py",
     "auth_microservice/src/models/dynamic_models.py",
     "auth_microservice/src/models/old_models.py"
 ]

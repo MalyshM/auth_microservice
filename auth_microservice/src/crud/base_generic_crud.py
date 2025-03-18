@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, delete, select, update
 
+from ..logger import base_logger
 from ..models.dynamic_models import ID_FIELD
 
 T = TypeVar("T", bound=SQLModel)
@@ -22,6 +23,7 @@ class AbstractCRUD(ABC, Generic[T, CREATE_T, DB_T]):
         db_entity: Type[DB_T],
     ) -> None:
         super().__init__()
+        self.logger = base_logger
         self.db_entity = db_entity
         self.entity = entity
         self.create_entity = create_entity
@@ -48,14 +50,17 @@ class AbstractCRUD(ABC, Generic[T, CREATE_T, DB_T]):
 
 
 class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
+    name = "Entity"
+
     async def create(self, obj: CREATE_T, session: AsyncSession) -> T:
         try:
             async with session.begin():
                 db_user = self.db_entity(**obj.model_dump())
                 session.add(db_user)
         except IntegrityError as e:
+            self.logger.error(e)
             raise HTTPException(
-                status_code=400, detail=f"User could not be created. {e}"
+                status_code=400, detail=f"{self.name} could not be created."
             )
         return self.entity(**db_user.model_dump())
 
@@ -68,7 +73,10 @@ class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
             )
             result = select_result.scalars().one()
         except NoResultFound as e:
-            raise HTTPException(status_code=404, detail=f"User not found. {e}")
+            self.logger.error(e)
+            raise HTTPException(
+                status_code=404, detail=f"{self.name} not found."
+            )
         return self.entity(**result.model_dump())
 
     async def read_all(self, session: AsyncSession) -> Sequence[T]:
@@ -96,8 +104,9 @@ class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
                 )
                 return await self.read(getattr(obj, ID_FIELD), session)
         except IntegrityError as e:
+            self.logger.error(e)
             raise HTTPException(
-                status_code=400, detail=f"User could not be updated. {e}"
+                status_code=400, detail=f"{self.name} could not be updated."
             )
 
     async def delete(self, id: UUID, session: AsyncSession) -> T:
@@ -111,6 +120,7 @@ class CRUD(AbstractCRUD[T, CREATE_T, DB_T]):
                 )
                 return deleted_row
         except IntegrityError as e:
+            self.logger.error(e)
             raise HTTPException(
-                status_code=400, detail=f"User could not be deleted. {e}"
+                status_code=400, detail=f"{self.name} could not be deleted."
             )

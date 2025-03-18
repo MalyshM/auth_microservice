@@ -25,6 +25,8 @@ def registrer_user(client: TestClient, override_db_dependency):
     assert client.cookies.get("refresh_token") is None
     client.post("/register", json=TEST_USER_FOR_TOKEN)
     assert client.cookies.get("refresh_token")
+    client.post("/login", json=TEST_USER_FOR_TOKEN)
+    assert client.cookies.get("access_token")
 
 
 @pytest.mark.asyncio
