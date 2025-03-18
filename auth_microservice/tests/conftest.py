@@ -13,7 +13,7 @@ from src.models.dynamic_db_models import UserDBType
 
 
 @pytest_asyncio.fixture
-def client():
+def client(override_db_dependency):
     return TestClient(app)
 
 
