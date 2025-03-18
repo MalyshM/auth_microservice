@@ -23,7 +23,6 @@ from ..models.dynamic_models import (
 from ..token_utils import verify_refresh_token
 from ..views.user_view import UserView
 
-
 user_router = APIRouter(
     prefix="/user",
     tags=["User"],

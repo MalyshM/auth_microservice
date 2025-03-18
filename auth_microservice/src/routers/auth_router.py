@@ -1,18 +1,15 @@
 import json
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
-
-from ..connection import connect_db_data
-
-from ..password_utils import generate_code_challenge
-
-from ..routers.pkce_router import post_pkce, pkce_by_host
-
-from ..schemes.pkce_sheme import PKCE_scheme
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..docs.responses import auth_200, response_401, auth_403
+from ..connection import connect_db_data
+from ..docs.responses import auth_200, auth_403, response_401
 from ..models.dynamic_models import ID_FIELD
+from ..password_utils import generate_code_challenge
+from ..routers.pkce_router import pkce_by_host, post_pkce
+from ..schemes.pkce_sheme import PKCE_scheme
 from ..token_utils import (
     refresh_access_token,
     verify_access_token,

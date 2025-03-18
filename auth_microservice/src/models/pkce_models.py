@@ -1,4 +1,5 @@
 import uuid
+
 from pydantic import create_model
 from sqlmodel import Field, SQLModel
 

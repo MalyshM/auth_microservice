@@ -1,9 +1,10 @@
-from ..models.pkce_models import PKCE, PKCEType
-from .base_generic_crud import CRUD
 from fastapi import HTTPException
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+
+from ..models.pkce_models import PKCE, PKCEType
+from .base_generic_crud import CRUD
 
 
 class PKCECRUD(CRUD[PKCEType, PKCEType, PKCEType]):

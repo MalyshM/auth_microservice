@@ -6,13 +6,12 @@ from fastapi.openapi.utils import get_openapi
 from starlette.middleware.base import _StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 
-
 from .logger import base_logger
 from .routers.auth_router import auth_router
+from .routers.pkce_router import pkce_router
 from .routers.reg_log_router import reg_log_router
 from .routers.ui_router import ui_router
 from .routers.user_router import user_router
-from .routers.pkce_router import pkce_router
 
 
 def get_application() -> FastAPI:

@@ -1,8 +1,7 @@
 from fastapi import HTTPException, Request
 
-from ..token_utils import verify_access_token
-
 from ..logger import base_logger
+from ..token_utils import verify_access_token
 
 
 async def auth_dependency(request: Request) -> bool:

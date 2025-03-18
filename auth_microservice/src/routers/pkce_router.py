@@ -5,9 +5,6 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.pkce_models import PKCE, PKCEType
-from ..schemes.pkce_sheme import PKCE_scheme
-from ..views.pkce_view import PKCEView
 from ..connection import connect_db_data
 from ..docs.responses import (
     create_response_400,
@@ -17,7 +14,9 @@ from ..docs.responses import (
     update_response_400,
 )
 from ..models.dynamic_models import UserPublicDBType
-
+from ..models.pkce_models import PKCE, PKCEType
+from ..schemes.pkce_sheme import PKCE_scheme
+from ..views.pkce_view import PKCEView
 
 pkce_router = APIRouter(
     prefix="/pkce",

@@ -7,8 +7,8 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, delete, select, update
 
-from ..models.dynamic_models import ID_FIELD
 from ..logger import base_logger
+from ..models.dynamic_models import ID_FIELD
 
 T = TypeVar("T", bound=SQLModel)
 CREATE_T = TypeVar("CREATE_T", bound=SQLModel)

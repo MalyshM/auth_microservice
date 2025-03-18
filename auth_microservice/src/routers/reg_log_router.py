@@ -8,13 +8,14 @@ from sqlmodel import select
 
 from ..connection import connect_db_data
 from ..docs.responses import (
-    reg_response_400,
     logout_200,
+    reg_response_400,
     response_400_general,
     response_401,
     response_403,
     response_404,
 )
+from ..logger import base_logger
 from ..models.dynamic_db_models import UserDBType
 from ..models.dynamic_models import (
     ID_FIELD,
@@ -22,7 +23,6 @@ from ..models.dynamic_models import (
     UserCreateType,
     UserPublicDBType,
 )
-from ..logger import base_logger
 from ..routers.user_router import get_my_user
 from ..token_utils import delete_cookie_tokens, set_cookie_tokens
 
