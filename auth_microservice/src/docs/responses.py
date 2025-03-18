@@ -15,6 +15,7 @@ auth_200 = {
         "application/json": {"example": "af926384-fa75-4da9-a5b2-1d81f2e1e5f8"}
     },
 }
+
 auth_403 = {
     "description": "Authentication is not successful. Returns JSON.",
     "content": {
@@ -34,6 +35,12 @@ reg_response_400 = {
                 )
             },
         }
+    },
+}
+logout_200 = {
+    "description": "Successfully logged out..",
+    "content": {
+        "application/json": {"example": {"detail": "Successfully logged out."}}
     },
 }
 create_response_400 = {
