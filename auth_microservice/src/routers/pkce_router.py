@@ -115,7 +115,7 @@ async def update_pkce(
 
 
 @pkce_router.delete(
-    "/user/{pkce_id}",
+    "/{pkce_id}",
     summary="Delete PKCE Entry",
     description="Deletes a PKCE entry from the system by its unique ID.",
     response_model=PKCEType,

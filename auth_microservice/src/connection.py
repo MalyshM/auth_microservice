@@ -16,9 +16,16 @@ DATABASE_URL = (
     f"{os.getenv('DB_PORT', '5432')}/{os.getenv("DB_NAME", "")}"
 )
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    echo_pool=True,
+    pool_size=20,
+    pool_pre_ping=True,
+    max_overflow=5,
+)
 async_session = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
+    engine, class_=AsyncSession, expire_on_commit=True
 )
 
 

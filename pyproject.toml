@@ -17,6 +17,7 @@ dependencies = [
     "python-dotenv==1.*",
     "pyjwt==2.*",
     "httpx>=0.28.1",
+    "gunicorn>=23.0.0",
 ]
 
 [dependency-groups]
@@ -28,6 +29,7 @@ dev = [
     "mypy==1.*", 
     "ruff==0.*", 
     "isort==5.*",
+    "locust>=2.33.2",
 ]
 
 [tool.black]

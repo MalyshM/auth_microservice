@@ -21,10 +21,15 @@ format:
 # local start
 start:
 	uvicorn auth_microservice.src.main:app --host 0.0.0.0 --port 8090 --reload --forwarded-allow-ips='*' --proxy-headers
+
+start_gunicorn:
+	gunicorn auth_microservice.src.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8090 --forwarded-allow-ips='*'
 # create ssl cert and run
 start_tls:
 	uvicorn auth_microservice.src.main:app --host 0.0.0.0 --port 8090 --reload --forwarded-allow-ips='*' --proxy-headers --ssl-keyfile key.pem --ssl-certfile cert.pem
 
+locust:
+	locust -f locustfile.py --host http://localhost
 # Docker
 build:
 	docker build -t $(IMAGE_NAME) -f .Dockerfile .
