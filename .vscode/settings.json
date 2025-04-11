@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "auth_microservice/tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
